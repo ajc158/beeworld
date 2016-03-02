@@ -1,5 +1,5 @@
 # beeworld
-A raytraced virtual environment for simulating a bee's field of view suing the Giger algorithm (http://andygiger.com/science/beye/beyehome.html)
+A raytraced virtual environment for simulating a bee's field of view using the Giger algorithm (http://andygiger.com/science/beye/beyehome.html)
 
 The program is written using Qt 5, and should work with most versions of Qt. 
 
