@@ -1,0 +1,353 @@
+#include "beeworldwindow.h"
+#include "ui_beeworldwindow.h"
+#include <QTimer>
+#include "beeworld.h"
+#include <QDebug>
+#include "math.h"
+#include <QThread>
+#include <QFileDialog>
+
+// for all the sockets stuff ('nix ONLY)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include "spinemlnetworkserver.h"
+
+
+#include <QLineEdit>
+
+BeeWorldWindow::BeeWorldWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::BeeWorldWindow)
+{
+    ui->setupUi(this);
+
+    world = new beeworld;
+
+    x = 2;
+    y = 0;
+    z = 4;
+    dir = .3;//.14/8.0;
+    pitch = 0;
+    roll = 0;
+
+    connect(ui->dir_but, SIGNAL(clicked()), this, SLOT(changeDir()));
+    connect(ui->pitch_but, SIGNAL(clicked()), this, SLOT(changePitch()));
+    connect(ui->roll_but, SIGNAL(clicked()), this, SLOT(changeRoll()));
+    connect(ui->server_toggle, SIGNAL(clicked()), this, SLOT(serverToggle()));
+    connect(ui->load_image_button, SIGNAL(clicked()), this, SLOT(loadImage()));
+
+    QTimer * timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(redrawImage()));
+    timer->start(0);
+
+    dataSize = 1024;
+
+    started = false;
+
+    // add connections
+    out = new spineMLNetworkServer();
+    in = new spineMLNetworkServer();
+
+    image = new QImage(400, 400, QImage::Format_RGB32);
+
+    /*for (int i = 0; i < 400; ++i) {
+        QRgb value;
+        value = qRgb(100, 255, 100); //
+        image->setPixel(190,i,value);
+        image->setPixel(210,i,value);
+    }*/
+
+    int x_walls = 5;
+    int y_walls = 1000;
+
+    for (int i = 0; i < 400; ++i) {
+        QRgb value;
+        value = qRgb(100, 255, 100); //
+            if (x_walls) {
+            image->setPixel(200-x_walls*5,i,value);
+            image->setPixel(200+x_walls*5,i,value);
+        }
+        if (y_walls) {
+            image->setPixel(i,200-y_walls*5,value);
+            image->setPixel(i,200+y_walls*5,value);
+        }
+    }
+
+    connection = NULL;
+
+    count = 0;
+    val = 0;
+
+
+}
+
+BeeWorldWindow::~BeeWorldWindow()
+{
+    delete world;
+    delete ui;
+}
+
+void BeeWorldWindow::redrawImage() {
+
+    ++count;
+
+
+    if (count > 9) {
+
+        count = 0;
+        QImage * im = world->getImage(x,y,z,dir,pitch,roll);
+
+        data.clear();
+
+        for (int i = 0; i < im->width(); ++i) {
+            for (int j = 0; j < im->height(); ++j) {
+                QRgb col = im->pixel(j,i);
+                data.push_back(((double) qGray(col))/255.0);
+            }
+        }
+
+        QPixmap pix;
+        pix = QPixmap::fromImage(*im);
+
+        pix = pix.scaledToHeight(160);
+
+
+
+        ui->view->setPixmap(pix);
+
+        QRgb value;
+        value = qRgb(100, 100, 255); //
+        if (x*5+200 > 0 && x*5+200 < 400 && y*5+200 > 0 && y*5+200 < 400)
+            image->setPixel(x*5+200,y*5+200,value);
+
+        pix;
+        pix = QPixmap::fromImage(*image);
+        ui->image->setPixmap(pix);
+
+        //y += 0.005;
+
+        /*++val;
+        if (val > 1500)
+            y+=0.005;
+        else
+            y-=0.005;
+
+        if (val > 3000)
+            val = 0;*/
+
+        delete im;
+    }
+
+    //dir += 3.14/100.0;
+    //y = y+0.005;
+    //x = 0;
+
+
+
+    if (in->server->isListening() && out->server->isListening()) {
+        ui->server_toggle->setText("Server (wait)");
+    } else if (in->isConnected() && out->isConnected() && !begun) {
+        int response = send_data();
+        begun = true;
+        ui->server_toggle->setText("Server (---)");
+    } else if ((in->isConnected() || out->isConnected()) && begun) {
+        int response = send_data();
+        ui->server_toggle->setText("Server (---)");
+    } else if ((!in->isConnected() && !out->isConnected()) && begun) {
+        begun = false;
+        ui->server_toggle->setText("Server (---)");
+    }else {
+        ui->server_toggle->setText("Server (off)");
+    }
+
+    //delete im;
+
+}
+
+int BeeWorldWindow::send_data() {
+
+    int n;
+    char response;
+
+    out->sendData((char*) &(data[0]), dataSize);
+
+    vector < double > dataIn;
+    dataIn.resize(4);
+
+    // since we can have a delay on the output only start reading once it is available;
+    if (in->isDataAvailable())
+        started = true;
+
+    if (started)
+        in->recvData((char*) &(dataIn[0]), dataIn.size());
+
+    out->sendDataConfirm();
+
+
+    // attempt to guide the bee
+    dir_change = (dataIn[0] - dataIn[2])-dir_change; // left - right (I think!)
+
+    //ui->text->setText("Data in: " + QString::number(dataIn[0]) + " " + QString::number(dataIn[2]) + " " + QString::number(dir_change));
+
+
+    dir+=dir_change/500.0;
+    y+=cos(dir)*0.03/(10.0+(dataIn[0] + dataIn[2]));
+    x-=sin(dir)*0.03/(10.0+(dataIn[0] + dataIn[2]));
+    //y+=0.0025;
+    //x = 2;
+    //z-=dataIn[1]+1.5;
+
+
+    return response;
+}
+
+void BeeWorldWindow::serverToggle() {
+
+    if (!in->server->isListening()) {
+        out->disconnectServer();
+        in->disconnectServer();
+        bool success = out->server->listen(QHostAddress::LocalHost,51000);
+        success *= in->server->listen(QHostAddress::LocalHost,51100);
+        if (!success) {
+            qDebug() << in->server->errorString();
+            qDebug() << out->server->errorString();
+            ui->server_toggle->setText("Server (off)");
+            return;
+        }
+        connect(in->server, SIGNAL(newConnection()), this, SLOT(connectedIn()));
+        connect(out->server, SIGNAL(newConnection()), this, SLOT(connectedOut()));
+        return;
+    }
+    else
+    {
+        disconnect(in->server);
+        in->server->close();
+        disconnect(out->server);
+        out->server->close();
+        ui->server_toggle->setText("Server (off)");
+        return;
+    }
+
+}
+
+void BeeWorldWindow::connectedOut() {
+
+    if (!out->isConnected()) {
+        if (!out->connectServer()) {
+            return;
+        } else {
+            // set up
+            qDebug() << "Handshake target";
+            if (!out->handShake()) {
+                out->disconnectServer();
+                return;
+            }
+
+            // we are a source!
+            if (out->isTarget()) {
+                out->disconnectServer();
+                return;
+            }
+            qDebug() << "Get type from target";
+            if (!out->sendDataType(ANALOG)) {
+                out->disconnectServer();
+                return;
+            }
+            qDebug() << "Get size from target";
+            if (!out->sendSize(dataSize)) {
+                out->disconnectServer();
+                return;
+            }
+
+            // connect out
+            out->server->close();
+            out->server->listen(QHostAddress::LocalHost,51100);
+        }
+    } else {
+        disconnect(out->server);
+        out->server->close();
+    }
+
+}
+
+void BeeWorldWindow::connectedIn() {
+   if (!in->isConnected()) {
+        if (!in->connectServer())
+            return;
+        else {
+            // set up
+            qDebug() << "Handshake source";
+            if (!in->handShake()) {
+                in->disconnectServer();
+                return;
+            }
+
+            // we are a target!
+            if (in->isSource()) {
+                in->disconnectServer();
+                return;
+            }
+
+            bool ok;
+            dataTypes type = in->recvDataType(ok);
+            if (!ok || type != ANALOG) {
+                qDebug() << "Input type is wrong";
+                in->disconnectServer();
+                return;
+            }
+
+            int recvSize = in->recvSize(ok);
+            if (recvSize != 4) {
+                qDebug() << "Input size is wrong: " + QString::number(recvSize);
+                in->disconnectServer();
+                return;
+            }
+            ui->server_toggle->setText("Server (---)");
+            started = false;
+        }
+    } else {
+        disconnect(in->server);
+        in->server->close();
+    }
+
+}
+
+void BeeWorldWindow::changeDir() {
+
+    dir += 3.14/8.0;
+
+}
+
+void BeeWorldWindow::changePitch() {
+
+    pitch += 3.14/8.0;
+
+}
+
+void BeeWorldWindow::changeRoll() {
+
+    roll += 3.14/8.0;
+
+}
+
+void BeeWorldWindow::loadImage() {
+/*    QString fileName = QFileDialog::getOpenFileName(this, tr("Load image"), qgetenv("HOME"), tr("Image files (*.jpg *.png);; All files (*.*)"));
+    image->load(fileName);
+    this->data.clear();
+    for (int i = 0; i < image->size().width(); ++i) {
+        for (int j = 0; j < image->size().height(); ++j) {
+            QRgb pixel = image->pixel(i,j);
+            data.push_back(qGray(pixel));
+        }
+    }
+    QPixmap pix;
+    pix = QPixmap::fromImage(*image);
+    pix = pix.scaledToWidth(131);
+    ui->image->setPixmap(pix);*/
+
+    this->world->scale_factor_for_one_wall += 0.5;
+    if (this->world->scale_factor_for_one_wall > 2.1)
+        this->world->scale_factor_for_one_wall = 0.5;
+}

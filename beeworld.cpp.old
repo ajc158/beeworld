@@ -1,0 +1,227 @@
+#include "beeworld.h"
+#include "math.h"
+#include <QDebug>
+
+int a_RNG = 1103515245;
+int c_RNG = 12345;
+
+#define ONE_OVER_FLOOR_SIZE 1.0//2.0
+//1.5
+
+int getValue (int seed) {
+
+        seed = abs(seed*a_RNG+c_RNG);
+        float seed2 = seed/2147483648.0;
+        return seed2;
+}
+
+beeworld::beeworld(QObject *parent) :
+    QObject(parent)
+{
+    N_ROWS = 32;//160;
+    N_COLS = 32;//160;
+    H_EXTENT = 160.0;//260
+    V_EXTENT = 160.0;
+
+    sphere s;
+    s.x = 5;
+    s.y = 5;
+    s.z = 1;
+    s.r_sq = 4;
+    spheres.push_back(s);
+    s.x = -5;
+    s.y = 5;
+    s.z = 1;
+    s.r_sq = 2;
+    spheres.push_back(s);
+    s.x = 10;
+    s.y = -5;
+    s.z = 2;
+    s.r_sq = 4;
+    spheres.push_back(s);
+    s.x = -10;
+    s.y = -15;
+    s.z = 3;
+    s.r_sq = 25;
+    spheres.push_back(s);
+
+    scale_factor_for_one_wall = 1.0;
+}
+
+QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, float roll) {
+
+    int x_walls = 3;
+    int y_walls = 0;
+
+    QImage * image = new QImage(N_COLS,N_ROWS,QImage::Format_RGB32);
+    image->fill(Qt::white);
+
+    // the raytracer:
+
+    float h_stride = H_EXTENT/N_COLS;
+    float v_stride = V_EXTENT/N_ROWS;
+
+    // for each horizontal ommatidium col
+    #pragma omp parallel for
+    for (int h = -N_COLS/2; h < N_COLS/2; ++h) {
+        // for each ommatidium in current col
+        for (int v = -N_ROWS/2; v < N_ROWS/2; ++v) {
+
+            float v_ang = v_stride * v;
+            float h_ang = h_stride * h + fabs(v_ang)/10.0;
+
+            // work out vector
+            float x_vect = sin(h_ang/180.0*3.14);
+            float y_vect = cos(h_ang/180.0*3.14);
+            float z_vect = -sin(v_ang/180.0*3.14);
+
+            // normalise
+            float sum = sqrt(pow(x_vect, 2) + pow(y_vect, 2) + pow(z_vect, 2));
+            x_vect /= sum;
+            y_vect /= sum;
+            z_vect /= sum;
+
+            // convert from bee co-ordinates to world co-ordinates
+            // roll
+            float x_temp = x_vect;
+            float z_temp = z_vect;
+            x_vect = cos(roll) * x_temp - sin(roll) * z_temp;
+            z_vect = sin(roll) * x_temp + cos(roll) * z_temp;
+            // pitch
+            float y_temp = y_vect;
+            z_temp = z_vect;
+            y_vect = cos(pitch) * y_temp - sin(pitch) * z_temp;
+            z_vect = sin(pitch) * y_temp + cos(pitch) * z_temp;
+            // direction
+            x_temp = x_vect;
+            y_temp = y_vect;
+            x_vect = cos(dir) * x_temp - sin(dir) * y_temp;
+            y_vect = sin(dir) * x_temp + cos(dir) * y_temp;
+
+            //qDebug() << x_vect << " " << y_vect << " " << z_vect;
+
+            // check if below horizon
+            if (z_vect < 0) {
+                // generate the procedural floor for use in optic flow
+                int valx = abs(int(((-2.0 / z_vect) * (x_vect) + x) * ONE_OVER_FLOOR_SIZE));
+                int valy = abs(int(((-2.0 / z_vect) * (y_vect) + y) * ONE_OVER_FLOOR_SIZE));
+                int val = valx*valx + valy*valy;
+                val = abs(val * a_RNG + c_RNG);
+                val = val % 255;
+                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());
+            }
+
+            if (x_walls) {
+                // add two infinite high walls
+                // insert vector into plane equation: x = +15;
+                float t = ((float) x_walls-x)/x_vect; // time of intersection
+                if (t > 0) { // if it is in front of us
+                    if (y_vect*t+y<y_walls &&y_vect*t+y>-y_walls) {
+                        if (z_vect*t + z > 0) {  // if z_intersection is above the floor
+                            if (z_vect*t + z < 5) { // if x intersection is below the parapet
+                                // generate procedural texture
+                                /*int valy = abs(int(((2.0 / x_vect) * (y_vect) + y) * ONE_OVER_FLOOR_SIZE));
+                                int valz = abs(int(((2.0 / x_vect) * (z_vect) + z) * ONE_OVER_FLOOR_SIZE/100.0));
+                                int val = valy*valy + valz*valz;
+                                val = abs(val * a_RNG + c_RNG);
+                                val = val % 255;*/
+                                // sinusoid
+                                float y_val = t*y_vect+y;
+                                float sin_y = sin(y_val*scale_factor_for_one_wall);
+                                int val = (int) ((sin_y+1)*127);
+                                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());
+                            }
+                        }
+                    }
+                }
+                // insert vector into plane equation: x = -15;
+                t = (-((float) x_walls)-x)/x_vect; // time of intersection
+                if (t > 0) { // if it is in front of us
+                    if (y_vect*t+y<y_walls &&y_vect*t+y>-y_walls) {
+                        if (z_vect*t + z > 0) {  // if z_intersection is above the floor
+                            if (z_vect*t + z < 5) { // if x intersection is below the parapet
+                                // generate procedural texture
+                                /*int valy = abs(int(((-2.0 / x_vect) * (y_vect) + y) * ONE_OVER_FLOOR_SIZE));
+                                int valz = abs(int(((-2.0 / x_vect) * (z_vect) + z) * ONE_OVER_FLOOR_SIZE/100.0));
+                                int val = valy*valy + valz*valz;
+                                val = abs(val * a_RNG + c_RNG);
+                                val = val % 255;*/
+                                float y_val = t*y_vect+y;
+                                float sin_y = sin(y_val); // *1 = 10Hz
+                                int val = (int) ((sin_y+1)*127);
+                                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (y_walls) {
+                // add another two infinite high walls
+                // insert vector into plane equation: x = +15;
+                float t = (((float) y_walls)-y)/y_vect; // time of intersection
+                if (t > 0) { // if it is in front of us
+                    if (x_vect*t+x<x_walls &&x_vect*t+x>-x_walls) {
+                        if (z_vect*t + z > 0) {  // if z_intersection is above the floor
+                            if (z_vect*t + z < 5) { // if x intersection is below the parapet
+                                // generate procedural texture
+                                /*int valx = abs(int(((2.0 / y_vect) * (x_vect) + x) * ONE_OVER_FLOOR_SIZE));
+                                int valz = abs(int(((2.0 / y_vect) * (z_vect) + z) * ONE_OVER_FLOOR_SIZE));
+                                int val = valx*valx + valz*valz;
+                                val = abs(val * a_RNG + c_RNG);
+                                val = val % 255;
+                                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());*/
+                                float x_val = t*x_vect+x;
+                                float sin_x = sin(x_val); // *1 = 10Hz
+                                int val = (int) ((sin_x+1)*127);
+                                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());
+                            }
+                        }
+                    }
+                }
+                // insert vector into plane equation: x = -15;
+                t = (-((float) y_walls)-y)/y_vect; // time of intersection
+                if (t > 0) { // if it is in front of us
+                    if (x_vect*t+x<x_walls &&x_vect*t+x>-x_walls) {
+                        if (z_vect*t + z > 0) {  // if z_intersection is above the floor
+                            if (z_vect*t + z < 5) { // if x intersection is below the parapet
+                                // generate procedural texture
+                                /*int valx = abs(int(((-2.0 / y_vect) * (x_vect) + x) * ONE_OVER_FLOOR_SIZE));
+                                int valz = abs(int(((-2.0 / y_vect) * (z_vect) + z) * ONE_OVER_FLOOR_SIZE));
+                                int val = valx*valx + valz*valz;
+                                val = abs(val * a_RNG + c_RNG);
+                                val = val % 255;
+                                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());*/
+                                float x_val = t*x_vect+x;
+                                float sin_x = sin(x_val); // *1 = 10Hz
+                                int val = (int) ((sin_x+1)*127);
+                                image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(val , val, val).rgb());
+                            }
+                        }
+                    }
+                }
+            }
+
+            // test all objects in the world for interaction
+            /*for (uint i = 0; i < spheres.size(); ++i) {
+                float x_s = spheres[i].x;
+                float y_s = spheres[i].y;
+                float z_s = spheres[i].z;
+                float r_sq = spheres[i].r_sq;
+
+                float B = 2 * (x_vect*(x - x_s) + y_vect*(y - y_s) + z_vect*(z - z_s));
+                float C = pow((x - x_s),2) + pow((y - y_s),2) + pow((z - z_s),2) - r_sq;
+                float det = pow(B,2) - 4*C;
+                if (det > 0) {
+                    if ((-B + sqrt(det)) / 2 > 0) {
+                        image->setPixel(h + N_COLS/2, v+N_ROWS/2,QColor(100,100,100).rgb());
+                        continue;
+                    }
+                }
+            }*/
+        }
+    }
+
+    return image;
+
+}
