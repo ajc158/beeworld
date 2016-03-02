@@ -1,0 +1,78 @@
+<BeeworldConfig>
+	<System>
+		<NumConnections value="5"/>
+		<DisplayScaling value="1.0"/>
+		<Blur value="false"/>
+		<Lighting value="false"/>
+		<Log path="/home/alex/Documents/beelog/"/>
+		<DT value="1.0"/>
+	</System>
+	<BeeEye>
+		<Vertical FOV="180" Resolution="32"/>
+		<Horizontal FOV="260" Resolution="32"/>
+	</BeeEye>
+	<BeeInitialState>
+		<Time value="0"/>
+		<X value="0"/>
+		<Y value="5"/>
+		<Z value="6"/>
+		<Roll value="0"/>
+		<Pitch value="0"/>
+		<Yaw value=""/>
+		<Speed value="40.01"/>
+		<TransverseSpeed value="0"/>
+	</BeeInitialState>
+	<Controllers>
+		<Controller source="freq" target="pattern1" port="LightCol"/>
+		<Controller source="locPosWall" target="plane1" port="LocationX"/>
+        <Controller source="locNegWall" target="plane2" port="LocationX"/>
+		<Controller source="control" target="bee" port="WallFollow"/>
+	</Controllers>
+	<World>
+		<Plane name="plane1">
+			<Location x="10" y="-100" z="0"/>
+			<Rotation xAxis="0" yAxis="0" zAxis="0"/>
+			<Scaling x="4" y="20000" z="30"/>
+			<Texture>
+				<Checked name="pattern1">
+					<Frequency x="1" y=".12" z=".0000001"/>
+					<Offset x="1.57" y="0.01" z="1.57"/>
+					<Motion x="0" y="0" z="0"/>
+					<LightCol r="0.8" g="0.8" b="0.8"/>
+					<DarkCol r="0.2" g="0.2" b="0.2"/>
+                    <isSine value="1"/>
+				</Checked>
+			</Texture>
+		</Plane>
+		<Plane name="plane2">
+			<Location x="-10" y="-100" z="0"/>
+			<Rotation xAxis="0" yAxis="0" zAxis="0"/>
+			<Scaling x="4" y="20000" z="30"/>
+			<Texture>
+				<Checked name="pattern2">
+					<Frequency x="1" y="0.12" z="0.000001"/>
+					<Offset x="1.57" y="0.01" z="1.57"/>
+					<Motion x="0" y="0" z="0"/>
+					<LightCol r="0.8" g="0.8" b="0.8"/>
+					<DarkCol r="0.2" g="0.2" b="0.2"/>
+                    <isSine value="1"/>
+				</Checked>
+			</Texture>
+		</Plane>
+		<Plane name="plane3">
+			<Location x="-20" y="-100" z="0.1"/>
+			<Rotation xAxis="0" yAxis="90" zAxis="0"/>
+			<Scaling x="100" y="20000" z="100"/>
+			<Texture>
+				<Checked name="pattern2">
+					<Frequency x="0.00001" y="0.1" z="5"/>
+					<Offset x="0.01" y="0.01" z="0.01"/>
+					<Motion x="0" y="0" z="0"/>
+					<LightCol r="0.8" g="0.8" b="0.8"/>
+					<DarkCol r="0.2" g="0.2" b="0.2"/>
+                    <isSine value="0"/>
+				</Checked>
+			</Texture>
+		</Plane>
+	</World>
+</BeeworldConfig>

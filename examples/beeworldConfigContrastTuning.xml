@@ -1,0 +1,47 @@
+<BeeworldConfig>
+	<System>
+		<NumConnections value="2"/>
+		<DisplayScaling value="1.0"/>
+		<Blur value="false"/>
+		<Lighting value="false"/>
+		<Log path=""/>
+		<DT value="0.1"/>
+	</System>
+	<BeeEye>
+		<Vertical FOV="2" Resolution="2"/>
+		<Horizontal FOV="200" Resolution="100"/>
+	</BeeEye>
+	<BeeInitialState>
+		<Time value="0"/>
+		<X value="0"/>
+		<Y value="0"/>
+		<Z value="3"/>
+		<Roll value="0"/>
+		<Pitch value="0"/>
+		<Yaw value="0"/>
+		<Speed value="0"/>
+		<TransverseSpeed value="0"/>
+	</BeeInitialState>
+	<Controllers>
+		<Controller source="freq" target="r1" port="RadialMotion"/>
+	</Controllers>
+	<World>
+		<Cylinder name="cy1">
+			<Location x="0" y="0" z="-50"/>
+			<Rotation xAxis="0" yAxis="0" zAxis="0"/>
+			<Scaling x="2" y="2" z="100"/>
+			<Texture>
+				<Radial name="r1">
+					<Frequency value="32.7"/>
+					<RadialOffset value="0.0"/>
+					<RadialMotion value="90.0"/>
+					<Offset x="0.0" y="0.0" z="0.0"/>
+					<Motion x="0" y="0" z="0"/>
+					<LightCol r="0.8" g="0.8" b="0.8"/>
+					<DarkCol r="0.2" g="0.2" b="0.2"/>
+					<isSine value="0"/>
+				</Radial>
+			</Texture>
+		</Cylinder>
+	</World>
+</BeeworldConfig>
