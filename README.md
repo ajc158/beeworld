@@ -8,7 +8,7 @@ of import is beeworldwindow.h/cpp, as this is the main hub of the program. It in
 the raytracer (beeworldgiger.h/cpp) and loads in config xml files. There are a few examples 
 in the 'examples' folder. The program communicates with external SpineML models (see user
 SpineML on GitHub, or http://bimpa.group.shef.ac.uk/SpineML/index.php/Home for more details)
-using a tcp/ip interface - the xml file defines the ports by which the program will communicate, 
+using a tcp/ip interface - the xml file defines the interface by which the program will communicate, 
 allowing the model to alter aspects of the beeworld 'in flight' (e.g. object locations/rotation, 
 texture colors/scalings, bee location/attitude). 
 
