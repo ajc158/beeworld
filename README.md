@@ -21,3 +21,8 @@ program will be fixed at 50091. Alternatively you can provide a filename and por
 the command line (i.e. beeworld2 ../myfile.xml 50092). See, I told you it was research code...
 
 If you are interested then have a play and add Issues to the tracker if there are any questions!
+
+Note: the renderer is threaded into 4 quarters, but is still not going to be super-optimal. There
+is no Octree or anything sensible, so your speed will go down rapidly with more objects in the
+scene. I don't use a GPU as the goal is to be using that for the models... feel free to optimise and
+throw me a pull request!
