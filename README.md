@@ -16,4 +16,8 @@ The world consists of a set of configurable primitives (sphere, plane, cylinder)
 of configurable textures (check, radial stripes). These are all subclasses of the master sceneobject and scenetexture
 classes, so can be extended if need be.
 
+The xml files can be loaded by running the program and clicking 'open'. If this is done the tcp/ip port of the 
+program will be fixed at 50091. Alternatively you can provide a filename and port number from
+the command line (i.e. beeworld2 ../myfile.xml 50092). See, I told you it was research code...
+
 If you are interested then have a play and add Issues to the tracker if there are any questions!
