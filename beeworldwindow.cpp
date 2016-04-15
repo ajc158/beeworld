@@ -151,6 +151,7 @@ void BeeWorldWindow::redrawScreen() {
 
     ui->view->setPixmap(pix);
     ui->view->repaint();
+    delete im;
 }
 
 void BeeWorldWindow::newConnection() {
@@ -242,7 +243,7 @@ void BeeWorldWindow::redrawImage() {
         }
     }
 
-
+    delete im;
     //QPixmap pix;
     //pix = QPixmap::fromImage(*im);
 
@@ -281,7 +282,6 @@ void BeeWorldWindow::redrawImage() {
 //    pix = QPixmap::fromImage(*image);
 //    ui->image->setPixmap(pix);
 
-    delete im;
 
 
 }
@@ -713,7 +713,7 @@ void BeeWorldWindow::send_data() {
             }
             // clear
             this->log.clear();
-            qApp->exit();
+            if (this->standalone) qApp->exit();
             return;
         }
         for (int i = 0; i < this->connections.size(); ++i) {

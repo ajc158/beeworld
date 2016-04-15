@@ -105,6 +105,12 @@ private:
                 image->setPixel(h+shift, v,QColor(val, val, val).rgb());
             }
             //omp_unset_lock(&writelock);
+
+
+        }
+        // clear up objects
+        for (int i = 0; i < this->objects.size(); ++i) {
+            delete objects[i];
         }
     }
 };
@@ -259,7 +265,7 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
 
     int i = 0;
     // for each ommatidium in List for each eye
-    #pragma omp parallel for
+    //#pragma omp parallel for
     QVector < beethread * > threads;
     for (int eye=-1; eye < 2; eye +=2) {
         // do in blocks of 2000
@@ -289,6 +295,7 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
     // wait for threads
     for (uint i = 0; i < threads.size(); ++i) {
         threads[i]->wait();
+        delete threads[i];
     }
 
     if (this->drawBee) {

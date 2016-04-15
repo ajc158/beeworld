@@ -6,6 +6,11 @@ sceneObject::sceneObject(QObject *parent) :
 {
 }
 
+sceneObject::~sceneObject()
+{
+    if (this->texture != NULL) delete this->texture;
+}
+
 sceneObject * sceneObject::copy() {
     return new sceneObject();
 }

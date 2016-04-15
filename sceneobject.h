@@ -15,6 +15,7 @@ class sceneObject : public QObject
     Q_OBJECT
 public:
     explicit sceneObject(QObject *parent = 0);
+    ~sceneObject();
 
     virtual sceneObject * copy();
 
