@@ -185,8 +185,8 @@ void beeworld::setJitter() {
     jitterX.clear();
     for (int i = 0; i < this->N_ROWS*3; ++i) {
         for (int j = 0; j < this->N_COLS*3; ++j) {
-            jitterX.push_back(randNum(-0.5,0.5));
-            jitterY.push_back(randNum(-0.5,0.5));
+            jitterX.push_back(randNum(-2.0,2.0));
+            jitterY.push_back(randNum(-2.0,2.0));// all were 0.5
         }
     }
     qDebug() << "Jitter Set";
@@ -326,22 +326,6 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
         for (uint i = 0; i < this->objects.size(); ++i) {
             threads.back()->objects.push_back(objects[i]->copy());
         }
-        /*if (i == 0) {
-            threads.back()->minCol = -(N_COLS/2+blur);
-            threads.back()->maxCol = -(N_COLS/4);
-        }
-        if (i == 1) {
-            threads.back()->minCol = -(N_COLS/4);;
-            threads.back()->maxCol = 0;
-        }
-        if (i == 2) {
-            threads.back()->minCol = 0;
-            threads.back()->maxCol = N_COLS/4;
-        }
-        if (i == 3) {
-            threads.back()->minCol = N_COLS/4;
-            threads.back()->maxCol = N_COLS/2+blur;
-        }*/
 
         threads.back()->dir = dir;
         threads.back()->roll = roll;
@@ -371,86 +355,6 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
     for (uint i = 0; i < threads.size(); ++i) {
         delete threads[i];
     }
-
-    /*
-        // for each ommatidium in current col
-        //#pragma omp parallel for
-        for (int v = -(N_ROWS/2+blur); v < N_ROWS/2+blur; ++v) {
-
-            // we have higher rez vertically than horizontally, higher rez at the front than the sides and top
-
-            if (i > jitterY.size()-1)
-                qDebug() << jitterY.size() << " " << i << " " << N_ROWS << " " << blur;
-
-            float sign = -((v < 0) - 0.5)*2;
-            float power = 1.0;
-            float v_ang = sign*pow(fabs(v_stride * v), power)/pow(V_EXTENT*0.5, power)*V_EXTENT*0.5 + jitterY[i]; // pow gives higher rez at centre
-            sign = -((h < 0) - 0.5)*2;
-            float h_ang = sign*pow(fabs(h_stride * h), power)/pow(H_EXTENT*0.5, power)*H_EXTENT*0.5 + jitterX[i];
-            // low rez at top
-            //
-            //h_ang /= cos(v_ang/180.0*M_PI); //0.000385
-
-            // work out vector
-            float x_vect = sin(h_ang/180.0*3.14);
-            float y_vect = cos(h_ang/180.0*3.14);
-            float z_vect = -sin(v_ang/180.0*3.14);
-
-            // normalise
-            float sum = sqrt(pow(x_vect, 2) + pow(y_vect, 2) + pow(z_vect, 2));
-            x_vect /= sum;
-            y_vect /= sum;
-            z_vect /= sum;
-
-            // convert from bee co-ordinates to world co-ordinates
-            // roll
-            float x_temp = x_vect;
-            float z_temp = z_vect;
-            x_vect = cos(roll) * x_temp - sin(roll) * z_temp;
-            z_vect = sin(roll) * x_temp + cos(roll) * z_temp;
-            // pitch
-            float y_temp = y_vect;
-            z_temp = z_vect;
-            y_vect = cos(pitch) * y_temp - sin(pitch) * z_temp;
-            z_vect = sin(pitch) * y_temp + cos(pitch) * z_temp;
-            // direction
-            x_temp = x_vect;
-            y_temp = y_vect;
-            x_vect = cos(dir) * x_temp - sin(dir) * y_temp;
-            y_vect = sin(dir) * x_temp + cos(dir) * y_temp;
-
-            // test all objects in the world for interaction
-
-            float min_t = 10000000.0;
-            int min_ind = -1;
-            //omp_set_lock(&writelock);
-            for (int k = 0; k < objects.size(); ++k) {
-                float t;
-                bool isHit = objects[k]->isHit(QVector3D(x,y,z), QVector3D(x_vect,y_vect,z_vect), t);
-                if (isHit && t < min_t) {
-                    min_t = t;
-                    min_ind = k;
-                }
-            }
-
-
-            if (min_ind != -1) {
-                image->setPixel((int) (h + N_COLS/2+blur), (int) (v+N_ROWS/2+blur),objects[min_ind]->getTexture(curr_t, this->lighting).rgb());
-            } else if (z_vect < 0) {
-                // generate the procedural floor for use in optic flow
-                int valx = abs(int((-z/z_vect * (x_vect) + x) * ONE_OVER_FLOOR_SIZE));
-                int valy = abs(int((-z/z_vect * (y_vect) + y) * ONE_OVER_FLOOR_SIZE));
-                int val = valx*valx + valy*valy;
-                val = abs(val * a_RNG + c_RNG);
-                //val = 100;
-                val = val % 255;
-                image->setPixel((int) (h + N_COLS/2+blur), (int) (v+N_ROWS/2+blur),QColor(val, val, val).rgb());
-            }
-            //omp_unset_lock(&writelock);
-            ++i;
-        }
-    }
-    */
 
     if (this->drawBee) {
         // remove bee object

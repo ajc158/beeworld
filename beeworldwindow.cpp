@@ -1,5 +1,7 @@
 #include "beeworldwindow.h"
+#ifndef IS_COMMANDLINE
 #include "ui_beeworldwindow.h"
+#endif
 #include <QTimer>
 #include "beeworld.h"
 #include "beeworldgiger.h"
@@ -27,11 +29,24 @@
 
 #include <QLineEdit>
 
+#ifndef IS_COMMANDLINE
+#define PRINTDETAILS(string) ui->console->appendPlainText(string);
+#else
+#define PRINTDETAILS(string) QTextStream(stdout) << string << endl;
+#endif
+
+
+#ifndef IS_COMMANDLINE
 BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::BeeWorldWindow)
 {
     ui->setupUi(this);
+#else
+  BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
+      QObject(parent)
+{
+#endif
 
     world = new beeworldgiger;
 
@@ -55,15 +70,19 @@ BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
 
     displayScale = 1.0;
 
+#ifndef IS_COMMANDLINE
     connect(ui->actionLoad_Config, SIGNAL(triggered()), this, SLOT(loadFile()));
+#endif
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(redrawImage()));
     //timer->start(0);
 
+#ifndef IS_COMMANDLINE
     redrawTimer = new QTimer(this);
     connect(redrawTimer, SIGNAL(timeout()), this, SLOT(redrawScreen()));
     redrawTimer->start(30);
+#endif
 
     dataSize = 1024;
 
@@ -116,7 +135,11 @@ BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
         qDebug() << "Load CL file";
         this->standalone = true;
     } else {
+#ifndef IS_COMMANDLINE
         qDebug() << "no file";
+#else
+        exit(-1);
+#endif
     }
 
 }
@@ -124,9 +147,12 @@ BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
 BeeWorldWindow::~BeeWorldWindow()
 {
     delete world;
+    #ifndef IS_COMMANDLINE
     delete ui;
+    #endif
 }
 
+#ifndef IS_COMMANDLINE
 void BeeWorldWindow::redrawScreen() {
 
     if (this->displayScale < 0.001) return;
@@ -153,6 +179,7 @@ void BeeWorldWindow::redrawScreen() {
     ui->view->repaint();
     delete im;
 }
+#endif
 
 void BeeWorldWindow::newConnection() {
 
@@ -160,34 +187,62 @@ void BeeWorldWindow::newConnection() {
 
     // try a new connection
     if (!newConn->getClient()) {
-        ui->console->appendPlainText("Failed incoming connection");
+#ifndef IS_COMMANDLINE
+        PRINTDETAILS("Failed incoming connection");
+#else
+        QTextStream(stdout) << "Failed incoming connection" << endl;
+#endif
     }
 
     // check sanity
     if (newConn->isSource() && newConn->size != this->world->numElements()) {
-        ui->console->appendPlainText("Input rejected due to incorrect size");
+#ifndef IS_COMMANDLINE
+        PRINTDETAILS("Input rejected due to incorrect size");
+#else
+        QTextStream(stdout) << "Input rejected due to incorrect size" << endl;
+#endif
     }
 
     /*if (newConn->isTarget() && newConn->size != 4) {
-        ui->console->appendPlainText("Output rejected due to incorrect size");
+        PRINTDETAILS("Output rejected due to incorrect size");
     }*/
 
     // found one!
     connections.push_back(newConn);
     if (newConn->isSource()) {
-        ui->console->appendPlainText("Connection found! - new input");
+#ifndef IS_COMMANDLINE
+        PRINTDETAILS("Connection found! - new input");
+#else
+        QTextStream(stdout) << "Connection found! - new input" << endl;
+#endif
     } else {
-        ui->console->appendPlainText("Connection found! - new output");
+#ifndef IS_COMMANDLINE
+        PRINTDETAILS("Connection found! - new output");
+#else
+        QTextStream(stdout) << "Connection found! - new output" << endl;
+#endif
     }
 
     // describe connection:
     if (newConn->dataType == ANALOG) {
-        ui->console->appendPlainText("Analog connection");
+#ifndef IS_COMMANDLINE
+        PRINTDETAILS("Analog connection");
+#else
+        QTextStream(stdout) << "Analog connection" << endl;
+#endif
     } else {
-        ui->console->appendPlainText("NOT Analog connection");
+#ifndef IS_COMMANDLINE
+        PRINTDETAILS("NOT Analog connection");
+#else
+        QTextStream(stdout) << "NOT Analog connection" << endl;
+#endif
     }
 
-    ui->console->appendPlainText(QString("Size = ") + QString::number(newConn->size) +  QString(""));
+#ifndef IS_COMMANDLINE
+    PRINTDETAILS(QString("Size = ") + QString::number(newConn->size) +  QString(""));
+#else
+    QTextStream(stdout) << QString("Size = ") + QString::number(newConn->size) +  QString("")  << endl;
+#endif
 
     // do we have enough connections?
     if (this->connections.size() == this->numConnections) {
@@ -289,59 +344,59 @@ void BeeWorldWindow::redrawImage() {
 
 void BeeWorldWindow::connectWorld(spineMLNetworkServer * src, QString port) {
     if (port == "WallFollow") {
-        ui->console->appendPlainText("Connected WallFollow...");
+        PRINTDETAILS("Connected WallFollow...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(wallFollow(QVector<float>)));
     }
     if (port == "Test") {
-        ui->console->appendPlainText("Connected Test...");
+        PRINTDETAILS("Connected Test...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(test(QVector<float>)));
     }
     if (port == "Paper1") {
-        ui->console->appendPlainText("Connected Paper1...");
+        PRINTDETAILS("Connected Paper1...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper1(QVector<float>)));
     }
     if (port == "Paper2") {
-        ui->console->appendPlainText("Connected Paper2...");
+        PRINTDETAILS("Connected Paper2...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper2(QVector<float>)));
     }
     if (port == "Paper3") {
-        ui->console->appendPlainText("Connected Paper3...");
+        PRINTDETAILS("Connected Paper3...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper3(QVector<float>)));
     }
     if (port == "Paper4") {
-        ui->console->appendPlainText("Connected Paper4...");
+        PRINTDETAILS("Connected Paper4...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper4(QVector<float>)));
     }
     if (port == "Sweep") {
-        ui->console->appendPlainText("Connected Sweep...");
+        PRINTDETAILS("Connected Sweep...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(sweep(QVector<float>)));
     }
     if (port == "SideSweep") {
-        ui->console->appendPlainText("Connected SideSweep...");
+        PRINTDETAILS("Connected SideSweep...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(sidesweep(QVector<float>)));
     }
     if (port == "Simple") {
-        ui->console->appendPlainText("Connected Simple...");
+        PRINTDETAILS("Connected Simple...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(simple(QVector<float>)));
     }
     if (port == "Roll") {
-        ui->console->appendPlainText("Connected Roll...");
+        PRINTDETAILS("Connected Roll...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(roll(QVector<float>)));
     }
     if (port == "Yaw") {
-        ui->console->appendPlainText("Connected Yaw...");
+        PRINTDETAILS("Connected Yaw...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(yaw(QVector<float>)));
     }
     if (port == "Pitch") {
-        ui->console->appendPlainText("Connected Pitch...");
+        PRINTDETAILS("Connected Pitch...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(pitch(QVector<float>)));
     }
     if (port == "Optomotor") {
-        ui->console->appendPlainText("Connected Optomotor...");
+        PRINTDETAILS("Connected Optomotor...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(optomotor(QVector<float>)));
     }
     if (port == "InitialLocation") {
-        ui->console->appendPlainText("Connected InitialLocation...");
+        PRINTDETAILS("Connected InitialLocation...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(initloc(QVector<float>)));
     }
 }
@@ -680,8 +735,8 @@ void BeeWorldWindow::send_data() {
             }
             connections.clear();
             this->counter = 0;
-            ui->console->appendPlainText("Connection broken");
-            ui->console->appendPlainText("v = " + QString::number(this->propertyValues[V]));
+            PRINTDETAILS("Connection broken");
+            PRINTDETAILS("v = " + QString::number(this->propertyValues[V]));
             val = 0;
             // reset beeworld
             this->applyInitialValues();

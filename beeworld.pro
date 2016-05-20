@@ -4,12 +4,21 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+CONFIG(compile_for_command_line) {
+    DEFINES += IS_COMMANDLINE
+    QT       += core network
+    CONFIG += console
+} else {
+    QT       += core gui network
+}
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = beeworld2
 TEMPLATE = app
+
+
 
 #INCLUDEPATH += /usr/include/unicap
 
