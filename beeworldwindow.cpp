@@ -861,7 +861,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                         if (reader->name() == "Vertical") {
 
                             if (reader->attributes().hasAttribute("FOV"))
-                                initialPropertyValues[FOV_V] = reader->attributes().value("FOV").toString().toString().toString().toFloat();
+                                initialPropertyValues[FOV_V] = reader->attributes().value("FOV").toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -872,7 +872,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                 settings.endArray();
                             }
                             if (reader->attributes().hasAttribute("Resolution"))
-                                initialPropertyValues[REZ_V] = reader->attributes().value("Resolution").toString().toString().toFloat();
+                                initialPropertyValues[REZ_V] = reader->attributes().value("Resolution").toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -887,7 +887,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                         } else if (reader->name() == "Horizontal") {
 
                             if (reader->attributes().hasAttribute("FOV"))
-                                initialPropertyValues[FOV_H] = reader->attributes().value("FOV").toString().toString().toFloat();
+                                initialPropertyValues[FOV_H] = reader->attributes().value("FOV").toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -898,7 +898,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                 settings.endArray();
                             }
                             if (reader->attributes().hasAttribute("Resolution"))
-                                initialPropertyValues[REZ_H] = reader->attributes().value("Resolution").toString().toString().toFloat();
+                                initialPropertyValues[REZ_H] = reader->attributes().value("Resolution").toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -1676,7 +1676,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                         if (reader->name() == "NumConnections") {
 
                             if (reader->attributes().hasAttribute("value"))
-                                this->numConnections = reader->attributes().value("value").toInt();
+                                this->numConnections = reader->attributes().value("value").toString().toInt();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
