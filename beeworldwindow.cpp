@@ -1042,7 +1042,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
 
                                 if (reader->name() == "Location") {
                                     if (reader->attributes().hasAttribute("x"))
-                                        location.setX(reader->attributes().value("x").toFloat());
+                                        location.setX(reader->attributes().value("x").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1053,7 +1053,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                         settings.endArray();
                                     }
                                     if (reader->attributes().hasAttribute("y"))
-                                        location.setY(reader->attributes().value("y").toFloat());
+                                        location.setY(reader->attributes().value("y").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1064,7 +1064,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                         settings.endArray();
                                     }
                                     if (reader->attributes().hasAttribute("z"))
-                                        location.setZ(reader->attributes().value("z").toFloat());
+                                        location.setZ(reader->attributes().value("z").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1077,7 +1077,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                     reader->skipCurrentElement();
                                 } else if (reader->name() == "Rotation") {
                                     if (reader->attributes().hasAttribute("xAxis"))
-                                        rotation.setX(reader->attributes().value("xAxis").toFloat());
+                                        rotation.setX(reader->attributes().value("xAxis").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1088,7 +1088,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                         settings.endArray();
                                     }
                                     if (reader->attributes().hasAttribute("yAxis"))
-                                        rotation.setY(reader->attributes().value("yAxis").toFloat());
+                                        rotation.setY(reader->attributes().value("yAxis").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1099,7 +1099,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                         settings.endArray();
                                     }
                                     if (reader->attributes().hasAttribute("zAxis"))
-                                        rotation.setZ(reader->attributes().value("zAxis").toFloat());
+                                        rotation.setZ(reader->attributes().value("zAxis").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1112,7 +1112,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                     reader->skipCurrentElement();
                                 } else if (reader->name() == "Scaling") {
                                     if (reader->attributes().hasAttribute("x"))
-                                        scaling.setX(reader->attributes().value("x").toFloat());
+                                        scaling.setX(reader->attributes().value("x").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1123,7 +1123,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                         settings.endArray();
                                     }
                                     if (reader->attributes().hasAttribute("y"))
-                                        scaling.setY(reader->attributes().value("y").toFloat());
+                                        scaling.setY(reader->attributes().value("y").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1134,7 +1134,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                         settings.endArray();
                                     }
                                     if (reader->attributes().hasAttribute("z"))
-                                        scaling.setZ(reader->attributes().value("z").toFloat());
+                                        scaling.setZ(reader->attributes().value("z").toString().toFloat());
                                     else {
                                         QSettings settings;
                                         int num_errs = settings.beginReadArray("errors");
@@ -1176,7 +1176,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
 
                                                 if (reader->name() == "Frequency") {
                                                     if (reader->attributes().hasAttribute("x"))
-                                                        freq.push_back(reader->attributes().value("x").toFloat());
+                                                        freq.push_back(reader->attributes().value("x").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1187,7 +1187,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("y"))
-                                                        freq.push_back(reader->attributes().value("y").toFloat());
+                                                        freq.push_back(reader->attributes().value("y").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1198,7 +1198,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("z"))
-                                                        freq.push_back(reader->attributes().value("z").toFloat());
+                                                        freq.push_back(reader->attributes().value("z").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1213,7 +1213,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "Offset") {
                                                     QVector <float> offset;
                                                     if (reader->attributes().hasAttribute("x"))
-                                                        offset.push_back(reader->attributes().value("x").toFloat());
+                                                        offset.push_back(reader->attributes().value("x").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1224,7 +1224,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("y"))
-                                                        offset.push_back(reader->attributes().value("y").toFloat());
+                                                        offset.push_back(reader->attributes().value("y").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1235,7 +1235,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("z"))
-                                                        offset.push_back(reader->attributes().value("z").toFloat());
+                                                        offset.push_back(reader->attributes().value("z").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1250,7 +1250,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "Motion") {
                                                     QVector <float> motion;
                                                     if (reader->attributes().hasAttribute("x"))
-                                                        motion.push_back(reader->attributes().value("x").toFloat());
+                                                        motion.push_back(reader->attributes().value("x").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1261,7 +1261,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("y"))
-                                                        motion.push_back(reader->attributes().value("y").toFloat());
+                                                        motion.push_back(reader->attributes().value("y").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1272,7 +1272,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("z"))
-                                                        motion.push_back(reader->attributes().value("z").toFloat());
+                                                        motion.push_back(reader->attributes().value("z").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1287,7 +1287,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "LightCol") {
                                                     QVector <float> col;
                                                     if (reader->attributes().hasAttribute("r"))
-                                                        col.push_back(reader->attributes().value("r").toFloat());
+                                                        col.push_back(reader->attributes().value("r").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1298,7 +1298,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("g"))
-                                                        col.push_back(reader->attributes().value("g").toFloat());
+                                                        col.push_back(reader->attributes().value("g").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1309,7 +1309,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("b"))
-                                                        col.push_back(reader->attributes().value("b").toFloat());
+                                                        col.push_back(reader->attributes().value("b").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1324,7 +1324,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 }  else if (reader->name() == "DarkCol") {
                                                     QVector <float> col;
                                                     if (reader->attributes().hasAttribute("r"))
-                                                        col.push_back(reader->attributes().value("r").toFloat());
+                                                        col.push_back(reader->attributes().value("r").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1335,7 +1335,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("g"))
-                                                        col.push_back(reader->attributes().value("g").toFloat());
+                                                        col.push_back(reader->attributes().value("g").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1346,7 +1346,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("b"))
-                                                        col.push_back(reader->attributes().value("b").toFloat());
+                                                        col.push_back(reader->attributes().value("b").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1361,7 +1361,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "isSine") {
                                                     QVector <float> temp;
                                                     if (reader->attributes().hasAttribute("value"))
-                                                        temp.push_back(reader->attributes().value("value").toFloat());
+                                                        temp.push_back(reader->attributes().value("value").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1413,7 +1413,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
 
                                                 if (reader->name() == "Frequency") {
                                                     if (reader->attributes().hasAttribute("value"))
-                                                        freq.push_back(reader->attributes().value("value").toFloat());
+                                                        freq.push_back(reader->attributes().value("value").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1427,7 +1427,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                     reader->skipCurrentElement();
                                                 } else if (reader->name() == "RadialOffset") {
                                                     if (reader->attributes().hasAttribute("value"))
-                                                        rOff.push_back(reader->attributes().value("value").toFloat());
+                                                        rOff.push_back(reader->attributes().value("value").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1441,7 +1441,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                     reader->skipCurrentElement();
                                                 } else if (reader->name() == "RadialMotion") {
                                                     if (reader->attributes().hasAttribute("value"))
-                                                        rMtn.push_back(reader->attributes().value("value").toFloat());
+                                                        rMtn.push_back(reader->attributes().value("value").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1456,7 +1456,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "Offset") {
                                                     QVector <float> offset;
                                                     if (reader->attributes().hasAttribute("x"))
-                                                        offset.push_back(reader->attributes().value("x").toFloat());
+                                                        offset.push_back(reader->attributes().value("x").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1467,7 +1467,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("y"))
-                                                        offset.push_back(reader->attributes().value("y").toFloat());
+                                                        offset.push_back(reader->attributes().value("y").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1478,7 +1478,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("z"))
-                                                        offset.push_back(reader->attributes().value("z").toFloat());
+                                                        offset.push_back(reader->attributes().value("z").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1493,7 +1493,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "Motion") {
                                                     QVector <float> motion;
                                                     if (reader->attributes().hasAttribute("x"))
-                                                        motion.push_back(reader->attributes().value("x").toFloat());
+                                                        motion.push_back(reader->attributes().value("x").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1504,7 +1504,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("y"))
-                                                        motion.push_back(reader->attributes().value("y").toFloat());
+                                                        motion.push_back(reader->attributes().value("y").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1515,7 +1515,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("z"))
-                                                        motion.push_back(reader->attributes().value("z").toFloat());
+                                                        motion.push_back(reader->attributes().value("z").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1530,7 +1530,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "LightCol") {
                                                     QVector <float> col;
                                                     if (reader->attributes().hasAttribute("r"))
-                                                        col.push_back(reader->attributes().value("r").toFloat());
+                                                        col.push_back(reader->attributes().value("r").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1541,7 +1541,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("g"))
-                                                        col.push_back(reader->attributes().value("g").toFloat());
+                                                        col.push_back(reader->attributes().value("g").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1552,7 +1552,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("b"))
-                                                        col.push_back(reader->attributes().value("b").toFloat());
+                                                        col.push_back(reader->attributes().value("b").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1567,7 +1567,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 }  else if (reader->name() == "DarkCol") {
                                                     QVector <float> col;
                                                     if (reader->attributes().hasAttribute("r"))
-                                                        col.push_back(reader->attributes().value("r").toFloat());
+                                                        col.push_back(reader->attributes().value("r").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1578,7 +1578,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("g"))
-                                                        col.push_back(reader->attributes().value("g").toFloat());
+                                                        col.push_back(reader->attributes().value("g").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1589,7 +1589,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                         settings.endArray();
                                                     }
                                                     if (reader->attributes().hasAttribute("b"))
-                                                        col.push_back(reader->attributes().value("b").toFloat());
+                                                        col.push_back(reader->attributes().value("b").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
@@ -1604,7 +1604,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                 } else if (reader->name() == "isSine") {
                                                     QVector <float> val;
                                                     if (reader->attributes().hasAttribute("value"))
-                                                        val.push_back(reader->attributes().value("value").toFloat());
+                                                        val.push_back(reader->attributes().value("value").toString().toFloat());
                                                     else {
                                                         QSettings settings;
                                                         int num_errs = settings.beginReadArray("errors");
