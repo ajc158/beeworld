@@ -1817,7 +1817,9 @@ void BeeWorldWindow::applyInitialValues() {
     this->world->setFOV(initialPropertyValues[FOV_V], initialPropertyValues[FOV_H]);
     this->world->setWorldSize(initialPropertyValues[REZ_V], initialPropertyValues[REZ_H]);
 
+#ifndef IS_COMMANDLINE
     this->redrawScreen();
+#endif
 
 }
 
