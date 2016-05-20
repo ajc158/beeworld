@@ -812,6 +812,7 @@ void BeeWorldWindow::send_data() {
 
 }
 
+#ifndef IS_COMMANDLINE
 bool BeeWorldWindow::loadFile() {
 
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -820,6 +821,7 @@ bool BeeWorldWindow::loadFile() {
                                                     tr("Config files (*.xml);; All files (*)"));
     return loadFile(fileName);
 }
+#endif
 
 bool BeeWorldWindow::loadFile(QString fileName) {
 
