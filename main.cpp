@@ -1,5 +1,6 @@
 #include <QApplication>
 #include "beeworldwindow.h"
+#include <QStringList>
 
 int main(int argc, char *argv[])
 {
