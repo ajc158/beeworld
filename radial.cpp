@@ -80,3 +80,40 @@ void radial::connectTexture(spineMLNetworkServer * src, QString port) {
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(setSine(QVector<float>)));
     }
 }
+
+sceneTexture * radial::copy() {
+    radial * newTex = new radial();
+    QVector<float>vals;
+    vals.push_back(this->darkColour.redF());
+    vals.push_back(this->darkColour.greenF());
+    vals.push_back(this->darkColour.blueF());
+    newTex->setDarkCol(vals);
+    vals.clear();
+    vals.push_back(this->lightColour.redF());
+    vals.push_back(this->lightColour.greenF());
+    vals.push_back(this->lightColour.blueF());
+    newTex->setLightCol(vals);
+    vals.clear();
+    vals.push_back(this->frequency);
+    newTex->setFrequency(vals);
+    vals.clear();
+    vals.push_back(this->offset.x());
+    vals.push_back(this->offset.y());
+    vals.push_back(this->offset.z());
+    newTex->setOffset(vals);
+    vals.clear();
+    vals.push_back(this->motion.x());
+    vals.push_back(this->motion.y());
+    vals.push_back(this->motion.z());
+    newTex->setMotion(vals);
+    vals.clear();
+    vals.push_back(this->radialOffset);
+    newTex->setRadialOffset(vals);
+    vals.clear();
+    vals.push_back(this->radialMotion);
+    newTex->setRadialMotion(vals);
+    vals.clear();
+    vals.push_back(this->isSine);
+    newTex->setSine(vals);
+    return newTex;
+}

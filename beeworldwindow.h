@@ -53,7 +53,7 @@ class BeeWorldWindow : public QMainWindow
     Q_OBJECT
     
 public:
-    explicit BeeWorldWindow(QWidget *parent = 0);
+    explicit BeeWorldWindow(QString file, uint port, QWidget *parent = 0);
     ~BeeWorldWindow();
 
     /*!
@@ -68,11 +68,20 @@ public slots:
     void redrawScreen();
     bool loadFile(QString fileName);
     bool loadFile();
+    void paper1(QVector<float>);
+    void paper2(QVector<float>);
+    void paper3(QVector<float>);
+    void paper4(QVector<float>);
     void wallFollow(QVector<float>);
+    void test(QVector<float>);
     void sweep(QVector<float>);
+    void sidesweep(QVector<float>);
     void simple(QVector<float>);
     void roll(QVector<float>);
+    void yaw(QVector<float>);
+    void pitch(QVector<float>);
     void optomotor(QVector<float>);
+    void initloc(QVector<float>);
 
 
 private:
@@ -137,6 +146,8 @@ private:
     QVector < QVector <float> > log;
 
     QString logPath;
+
+    bool standalone;
 
 };
 

@@ -6,6 +6,10 @@ sceneObject::sceneObject(QObject *parent) :
 {
 }
 
+sceneObject * sceneObject::copy() {
+    return new sceneObject();
+}
+
 QColor sceneObject::getTexture(float t, bool lighting){
 
    // something has gone wrong!

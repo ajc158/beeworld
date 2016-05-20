@@ -10,6 +10,7 @@ public:
     explicit cylinder(QVector3D location, QVector3D scaling, QVector3D rotation, QObject *parent = 0);
     bool isHit(QVector3D ray_loc, QVector3D ray_dir, float &t);
     void connectObject(spineMLNetworkServer *, QString);
+    sceneObject * copy();
 
 signals:
 

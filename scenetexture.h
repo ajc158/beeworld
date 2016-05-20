@@ -25,6 +25,8 @@ public:
     virtual void connectTexture(spineMLNetworkServer *, QString) {return;}
 
     virtual void dbgPrint() {}
+    
+    virtual sceneTexture * copy() {return new sceneTexture();}
 
     QString name;
 

@@ -27,7 +27,7 @@
 
 #include <QLineEdit>
 
-BeeWorldWindow::BeeWorldWindow(QWidget *parent) :
+BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::BeeWorldWindow)
 {
@@ -99,13 +99,25 @@ BeeWorldWindow::BeeWorldWindow(QWidget *parent) :
 
     server = new QTcpServer(this);
     connect(server, SIGNAL(newConnection()), this, SLOT(newConnection()));
-    server->listen(QHostAddress::Any, 50091);
+    server->listen(QHostAddress::Any, port);
 
     count = 0;
     val = 0;
     counter = 0;
 
     dt = 0.1;
+
+    this->standalone = false;
+
+
+    if (file != "") {
+        // load startup file
+        this->loadFile(file);
+        qDebug() << "Load CL file";
+        this->standalone = true;
+    } else {
+        qDebug() << "no file";
+    }
 
 }
 
@@ -116,6 +128,8 @@ BeeWorldWindow::~BeeWorldWindow()
 }
 
 void BeeWorldWindow::redrawScreen() {
+
+    if (this->displayScale < 0.001) return;
 
     // render the world Hi-Rez for fun!
     QImage * im = world->getImage(propertyValues[X],propertyValues[Y],propertyValues[Z],propertyValues[YAW],propertyValues[PITCH],propertyValues[ROLL], propertyValues[TIME], this->displayScale);
@@ -275,23 +289,154 @@ void BeeWorldWindow::redrawImage() {
 
 void BeeWorldWindow::connectWorld(spineMLNetworkServer * src, QString port) {
     if (port == "WallFollow") {
+        ui->console->appendPlainText("Connected WallFollow...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(wallFollow(QVector<float>)));
     }
+    if (port == "Test") {
+        ui->console->appendPlainText("Connected Test...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(test(QVector<float>)));
+    }
+    if (port == "Paper1") {
+        ui->console->appendPlainText("Connected Paper1...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper1(QVector<float>)));
+    }
+    if (port == "Paper2") {
+        ui->console->appendPlainText("Connected Paper2...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper2(QVector<float>)));
+    }
+    if (port == "Paper3") {
+        ui->console->appendPlainText("Connected Paper3...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper3(QVector<float>)));
+    }
+    if (port == "Paper4") {
+        ui->console->appendPlainText("Connected Paper4...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper4(QVector<float>)));
+    }
     if (port == "Sweep") {
+        ui->console->appendPlainText("Connected Sweep...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(sweep(QVector<float>)));
     }
+    if (port == "SideSweep") {
+        ui->console->appendPlainText("Connected SideSweep...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(sidesweep(QVector<float>)));
+    }
     if (port == "Simple") {
+        ui->console->appendPlainText("Connected Simple...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(simple(QVector<float>)));
     }
     if (port == "Roll") {
         ui->console->appendPlainText("Connected Roll...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(roll(QVector<float>)));
     }
+    if (port == "Yaw") {
+        ui->console->appendPlainText("Connected Yaw...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(yaw(QVector<float>)));
+    }
+    if (port == "Pitch") {
+        ui->console->appendPlainText("Connected Pitch...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(pitch(QVector<float>)));
+    }
     if (port == "Optomotor") {
         ui->console->appendPlainText("Connected Optomotor...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(optomotor(QVector<float>)));
     }
+    if (port == "InitialLocation") {
+        ui->console->appendPlainText("Connected InitialLocation...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(initloc(QVector<float>)));
+    }
 }
+
+void BeeWorldWindow::paper1(QVector<float> data) {
+
+    if (val > 200) {
+
+        //dir_change = (dataIn[0] - dataIn[2]); // left - right (I think!)
+        float mag = data[0] > data[2] ? data[0] : data[2];
+        float sign = (data[0] > data[2])*2-1;
+
+        //mag = mag > 10.0 ? 1 : -1;
+
+        //float setPoint = (dataIn[0] + dataIn[2])/2.0;
+        float scale = 1.0;
+        float side_setPoint = 1.0*scale;// 0.97 # 1.0 for 0 balance and 0.25 balance, 0.7 for 1.0 balance
+        float height_setPoint = 0.5*scale;//1.3
+        float velocity_setPoint = (2.0*side_setPoint /*+ height_setPoint*/);
+
+        mag = mag - side_setPoint;
+
+        dir_change = mag*sign;
+
+        this->propertyValues[Y]-=sin(this->propertyValues[YAW])*dir_change/2.4;
+        this->propertyValues[X]+=cos(this->propertyValues[YAW])*dir_change/2.4;
+
+        // height regulation:
+        this->propertyValues[Z] += (data[1]-height_setPoint)/18.0;
+
+        // speed regulation
+        this->propertyValues[V] -= ((data[0] + /*data[1] +*/ data[2]) - velocity_setPoint)/2.4; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
+        //this->propertyValues[V] -= (2.0*mag - velocity_setPoint)/12.4; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
+
+    }
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+
+}
+
+void BeeWorldWindow::paper2(QVector<float> data) {
+
+    if (val > 200) {
+
+        //dir_change = (dataIn[0] - dataIn[2]); // left - right (I think!)
+        float mag = data[0] > data[2] ? data[0] : data[2];
+        float sign = (data[0] > data[2])*2-1;
+
+        //mag = mag > 10.0 ? 1 : -1;
+
+        //float setPoint = (dataIn[0] + dataIn[2])/2.0;
+        float scale = 1.0;
+        float side_setPoint = 0.9*scale;// 0.97 # 1.0 for 0 balance and 0.25 balance, 0.7 for 1.0 balance
+        float height_setPoint = 0.3*scale;//1.3
+        float velocity_setPoint = (2.0*side_setPoint /*+ height_setPoint*/);
+
+        mag = mag - side_setPoint;
+
+        dir_change = mag*sign;
+
+        this->propertyValues[Y]-=sin(this->propertyValues[YAW])*dir_change/2.3;
+        this->propertyValues[X]+=cos(this->propertyValues[YAW])*dir_change/2.3;
+
+        // height regulation:
+        this->propertyValues[Z] += (data[1]-height_setPoint)/30.0;
+
+        // speed regulation
+        this->propertyValues[V] -= ((data[0] + /*data[1] +*/ data[2]) - velocity_setPoint)/2.4; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
+        //this->propertyValues[V] -= (2.0*mag - velocity_setPoint)/12.4; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
+
+    }
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+
+
+}
+
+void BeeWorldWindow::paper3(QVector<float> data) {
+
+    if (val > 100) {
+    }
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+
+}
+
+void BeeWorldWindow::paper4(QVector<float> data) {
+
+    if (val > 100) {
+    }
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+
+}
+
 
 void BeeWorldWindow::wallFollow(QVector<float> data) {
 
@@ -300,21 +445,21 @@ void BeeWorldWindow::wallFollow(QVector<float> data) {
         //dir_change = (dataIn[0] - dataIn[2]); // left - right (I think!)
         float mag = data[0] > data[2] ? data[0] : data[2];
         float mag_min = data[0] < data[2] ? data[0] : data[2];
-        float sign = ((data[0] > data[2])*2-1);
+        float sign = ((data[0] < data[2])*2-1);
 
         //mag = mag > 10.0 ? 1 : -1;
 
         //float setPoint = (dataIn[0] + dataIn[2])/2.0;
-        float scale = 300;
+        float scale = 1;
         float side_setPoint = 1.0*scale;// 0.97 # 1.0 for 0 balance and 0.25 balance, 0.7 for 1.0 balance
         float height_setPoint = 0.5*scale;//1.3
-        float velocity_setPoint = (1.6*side_setPoint /*+ height_setPoint*/);
+        float velocity_setPoint = (2.0*side_setPoint /*+ height_setPoint*/);
 
         // avoidance
         // this uses the 6th index of the data, and is based on the experimental findings
         // of the Straw lab
-        float z = data[5]*0.04; // z must be -1 -> 1
-        qDebug() << z;
+        float z = data[5]; // z must be -1 -> 1
+        //qDebug() << "z=" << z;
         // do we have a right turn?
         // transform z with linear piecewise...
         float rate_right = z > -0.75 ? -(z-1.0)/1.75 : z > -0.9 ? -(z+0.75)*12.0+1.0 : 100;
@@ -337,19 +482,19 @@ void BeeWorldWindow::wallFollow(QVector<float> data) {
 
         mag = mag - side_setPoint;
 
-        dir_change = mag*sign/400.0;
+        dir_change = mag*sign/1.0;
 
-        this->propertyValues[Y]-=sin(this->propertyValues[YAW])*dir_change/2.3;
-        this->propertyValues[X]+=cos(this->propertyValues[YAW])*dir_change/2.3;
+        this->propertyValues[Y]-=sin(this->propertyValues[YAW])*dir_change/1.0;
+        this->propertyValues[X]+=cos(this->propertyValues[YAW])*dir_change/1.0;
 
         // height regulation:
         //this->propertyValues[Z] += (data[1]-height_setPoint)/1200.0;
 
         // speed regulation
-        this->propertyValues[V] -= ((data[0] + /*data[1] +*/ data[2]) - velocity_setPoint)/20.0; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
+        this->propertyValues[V] -= ((data[0] + /*data[1] +*/ data[2]) - velocity_setPoint)/4.0; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
         // decay to 30...
-        this->propertyValues[V] -= (this->propertyValues[V] - 30.0)/5.0;
-        qDebug() << this->propertyValues[V] << " " << this->propertyValues[X] << " " << (data[0] + /*data[1] +*/ data[2]);
+        this->propertyValues[V] -= (this->propertyValues[V] - 60.0)/3.0;
+        //qDebug() << this->propertyValues[V] << " " << this->propertyValues[X] << " " << (data[0] + /*data[1] +*/ data[2]);
         //this->propertyValues[V] = 100;
 
     }
@@ -358,6 +503,73 @@ void BeeWorldWindow::wallFollow(QVector<float> data) {
     this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
 
 }
+
+void BeeWorldWindow::test(QVector<float> data) {
+
+    if (val > 100) {
+
+        float velocity_setPoint = 1.3;
+
+        float avoid_right_scale = 1.0;
+        float avoid_left_scale = 1.0;
+
+        // angled avoidance
+        // this uses the 6th index of the data, and is based on the experimental findings
+        // of the Straw lab
+        float z_orig = data[5]; // z must be -1 -> 1
+        //qDebug() << "z=" << z;
+        // do we have a right turn?
+        // transform z with linear piecewise...
+        float z = z_orig * avoid_right_scale;
+        float rate_right = z > -0.75 ? -(z-1.0)/1.75 : z > -0.9 ? -(z+0.75)*12.0+1.0 : 100;
+        // now use the rate to work out the p of a turn this timestep... given that we have a timestep of 1ms and rate is /s
+        float p_right = rate_right/1000.0;
+        // same, but opposite linear piecewise for left...
+        z = z_orig * avoid_left_scale;
+        float rate_left = z < 0.75 ? (z+1.0)/1.75 : z < 0.9 ? (z-0.75)*12.0+1.0 : 100;
+        float p_left = rate_left/1000.0;
+
+        // head on collision avoidance
+        z = data[6];
+        float rate = z < 0.75 ? (z+1.0)/1.75 : z < 0.9 ? (z-0.75)*12.0+1.0 : 100;
+        float p_headon = rate_left/1000.0;
+
+        // now compare these values to rand() and trigger saccade
+        float r_right = rand() / (RAND_MAX + 1.);
+        float r_left = rand() / (RAND_MAX + 1.);
+        float r_headon = rand() / (RAND_MAX + 1.);
+
+        this->propertyValues[YAW] += data[8]-data[9];
+
+        this->propertyValues[YAW] += data[10]-data[11];
+
+        if (r_right < p_right) {
+            //this->propertyValues[YAW] += 0.2 + (rand() / (RAND_MAX + 1.))*0.1;
+        }
+        if (r_left < p_left) {
+            //this->propertyValues[YAW] -= 0.2 + (rand() / (RAND_MAX + 1.))*0.1;
+        }
+        if (r_headon < p_headon) {
+            if (rand() / (RAND_MAX + 1.) > 0.5) {
+                //this->propertyValues[YAW] += 0.4 + (rand() / (RAND_MAX + 1.))*0.1;
+            } else {
+                //this->propertyValues[YAW] -= 0.4 + (rand() / (RAND_MAX + 1.))*0.1;
+            }
+        }
+        // speed regulation
+        //this->propertyValues[V] -= (data[7] - velocity_setPoint)*1.0; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
+        // decay to 30...
+        this->propertyValues[V] -= (this->propertyValues[V] - 60.0)/80.0;
+        //qDebug() << this->propertyValues[V] << " " << this->propertyValues[X] << " " << (data[0] + /*data[1] +*/ data[2]);
+        //this->propertyValues[V] = 100;
+
+    }
+    //this->propertyValues[YAW] += 0.001;
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.001*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.001*this->propertyValues[V];
+
+}
+
 
 void BeeWorldWindow::sweep(QVector<float> data) {
 
@@ -371,7 +583,21 @@ void BeeWorldWindow::sweep(QVector<float> data) {
 
 }
 
+void BeeWorldWindow::sidesweep(QVector<float> data) {
+
+    this->propertyValues[V_TRANS] = this->propertyValues[V_TRANS] * 1.001;
+
+    // move the bee according to the velocity
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[Y]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V_TRANS];
+    this->propertyValues[X]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V_TRANS];
+
+}
+
 void BeeWorldWindow::simple(QVector<float> data) {
+
+    qDebug() << "SIMPLE...";
 
     this->propertyValues[V] = data[0];
 
@@ -391,10 +617,38 @@ void BeeWorldWindow::roll(QVector<float> data) {
 
 }
 
+void BeeWorldWindow::yaw(QVector<float> data) {
+
+    if (data.size() > 0) {
+        this->propertyValues[YAW] = data[0]/180*M_PI;
+    }
+
+}
+
+
+void BeeWorldWindow::pitch(QVector<float> data) {
+
+    if (data.size() > 0) {
+        this->propertyValues[PITCH] = data[0]/180*M_PI;
+    }
+
+}
+
+
 void BeeWorldWindow::optomotor(QVector<float> data) {
 
     if (data.size() == 2) {
         //this->propertyValues[YAW] -= (data[0]-data[1])*0.05;
+    }
+
+}
+
+void BeeWorldWindow::initloc(QVector<float> data) {
+
+    if (data.size() == 3 && val < 3) {
+        this->propertyValues[X] = data[0];
+        //this->propertyValues[Y] = data[1];
+        //this->propertyValues[Z] = data[2];
     }
 
 }
@@ -459,6 +713,7 @@ void BeeWorldWindow::send_data() {
             }
             // clear
             this->log.clear();
+            qApp->exit();
             return;
         }
         for (int i = 0; i < this->connections.size(); ++i) {
@@ -534,7 +789,13 @@ bool BeeWorldWindow::loadFile(QString fileName) {
     // read elements
     while (reader->readNextStartElement()) {
 
-        if (reader->name() == "BeeworldConfig") {
+        if (reader->name() == "BeeworldConfig" || reader->name() == "BeeworldConfigOld") {
+
+            if (reader->name() == "BeeworldConfigOld") {
+                delete this->world;
+                this->world = new beeworld;
+                world->clearObjects();
+            }
 
             while (reader->readNextStartElement()) {
 

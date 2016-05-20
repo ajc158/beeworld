@@ -13,7 +13,7 @@ TEMPLATE = app
 
 #INCLUDEPATH += /usr/include/unicap
 
-#QMAKE_CXXFLAGS += -fopenmp
+QMAKE_CXXFLAGS += -fopenmp
 QMAKE_MAC_SDK = macosx10.9
 
 SOURCES += main.cpp\

@@ -1,4 +1,5 @@
 #include "plane.h"
+#include "scenetexture.h"
 
 plane::plane(QVector3D location, QVector3D scaling, QVector3D rotation,QObject *parent) :
     sceneObject(parent)
@@ -85,4 +86,11 @@ void plane::connectObject(spineMLNetworkServer * src, QString port) {
     if (port == "ScalingZ") {
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(setScalingZ(QVector<float>)));
     }
+}
+
+sceneObject * plane::copy() {
+    // create a new plane and return a pointer
+    plane * newObj = new plane(this->location, this->scaling, this->rotation);
+    newObj->setTextureGenerator(this->texture->copy());
+    return newObj;
 }

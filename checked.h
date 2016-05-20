@@ -11,6 +11,8 @@ public:
     explicit checked(QObject *parent = 0);
     QColor getColour(QVector3D location, float t);
     void connectTexture(spineMLNetworkServer *, QString);
+    
+    sceneTexture * copy();
 
     void dbgPrint() {
         qDebug() << "Texture " << name;

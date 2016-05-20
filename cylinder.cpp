@@ -86,3 +86,10 @@ void cylinder::connectObject(spineMLNetworkServer * src, QString port) {
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(setScalingZ(QVector<float>)));
     }
 }
+
+sceneObject * cylinder::copy() {
+    // create a new plane and return a pointer
+    cylinder * newObj = new cylinder(this->location, this->scaling, this->rotation);
+    newObj->setTextureGenerator(this->texture->copy());
+    return newObj;
+}

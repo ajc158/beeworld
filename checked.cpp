@@ -17,6 +17,17 @@ QColor checked::getColour(QVector3D location, float t) {
     QVector3D vals;
     QVector3D vals_for_sin = (location * (this->frequency * M_PI * 2)) - this->offset - this->motion * t;
     //QVector3D vals;
+
+    // generate detail to add
+    /*QVector3D vals_for_detail = (location * QVector3D(1.00234,1.008848,1.0066848));
+    int v_x = (int) vals_for_detail.x();
+    int v_y = (int) vals_for_detail.y();
+    int v_z = (int) vals_for_detail.z();
+
+    int val = v_x*v_y + v_x*v_z + v_z*v_y;
+    val = ((val * 1103515245 + 12345) % 100)+50;
+    //QColor detail = QColor(val,val,val);*/
+
     if (isSine) {
         vals.setX(qSin(vals_for_sin.x()));
         vals.setY(qSin(vals_for_sin.y()));
@@ -37,14 +48,18 @@ QColor checked::getColour(QVector3D location, float t) {
         if (vals.x() + vals.y() == 0 || (vals.x() * vals.y()) == 1) {
             if (vals.z()) {
                 return darkColour;
+                //return darkColour.lighter(val);
             } else {
                 return lightColour;
+                //return lightColour.darker(val);
             }
         } else {
             if (vals.z()) {
                 return lightColour;
+                //return lightColour.darker(val);
             } else {
                 return darkColour;
+                //return darkColour.lighter(val);
             }
         }
     }
@@ -94,4 +109,37 @@ void checked::connectTexture(spineMLNetworkServer * src, QString port) {
     if (port == "LightCol") {
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(setLightCol(QVector<float>)));
     }
+}
+
+sceneTexture * checked::copy() {
+    checked * newTex = new checked();
+    QVector<float>vals;
+    vals.push_back(this->darkColour.redF());
+    vals.push_back(this->darkColour.greenF());
+    vals.push_back(this->darkColour.blueF());
+    newTex->setDarkCol(vals);
+    vals.clear();
+    vals.push_back(this->lightColour.redF());
+    vals.push_back(this->lightColour.greenF());
+    vals.push_back(this->lightColour.blueF());
+    newTex->setLightCol(vals);
+    vals.clear();
+    vals.push_back(this->frequency.x());
+    vals.push_back(this->frequency.y());
+    vals.push_back(this->frequency.z());
+    newTex->setFrequency(vals);
+    vals.clear();
+    vals.push_back(this->offset.x());
+    vals.push_back(this->offset.y());
+    vals.push_back(this->offset.z());
+    newTex->setOffset(vals);
+    vals.clear();
+    vals.push_back(this->motion.x());
+    vals.push_back(this->motion.y());
+    vals.push_back(this->motion.z());
+    newTex->setMotion(vals);
+    vals.clear();
+    vals.push_back(this->isSine);
+    newTex->setIsSine(vals);
+    return newTex;
 }

@@ -15,6 +15,9 @@ class sceneObject : public QObject
     Q_OBJECT
 public:
     explicit sceneObject(QObject *parent = 0);
+
+    virtual sceneObject * copy();
+
     // constructor to read from an XML scene description - bool is used to denote an error if set to false
     sceneObject(QXmlStreamReader * /* xmlIn */, bool &ok, QObject * parent = 0) {ok = false;}
     //~sceneObject() {if (texture) delete texture;}

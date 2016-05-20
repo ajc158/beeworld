@@ -2,6 +2,8 @@
 #include "beeworldgiger.h"
 #include "math.h"
 #include <QDebug>
+#include <QThread>
+#include <QMutex>
 
 // include primitives
 #include"sphere.h"
@@ -10,15 +12,103 @@
 
 // include textures
 #include "checked.h"
-//#include <omp.h>
 
 #include "gigerdata.h"
 
 int a_RNGg = 1103515245;
 int c_RNGg = 12345;
 
+
 #define ONE_OVER_FLOOR_SIZE 0.5
 //1.5
+
+class beethread : public QThread
+{
+public:
+    int starti;
+    int end;
+    int eye;
+    QImage * image;
+    QVector < sceneObject * > objects;
+    float roll;
+    float dir;
+    float pitch;
+    float x;
+    float y;
+    float z;
+    float curr_t;
+    bool lighting;
+
+private:
+    void run() {
+        for (int currIndex=starti; currIndex < end; ++currIndex) {
+            float v_ang = gdata[currIndex][0]-60;
+            float h_ang = gdata[currIndex][1]*-eye; // flip angle for different eyes
+
+            int h = (100-gdata[currIndex][2])*-eye;
+            int v = gdata[currIndex][3];
+
+            int shift = eye<0 ? 0 : 199; // shift pixels for right eye
+
+            // work out vector
+            float x_vect = sin(h_ang/180.0*3.14);
+            float y_vect = cos(h_ang/180.0*3.14);
+            float z_vect = -sin(v_ang/180.0*3.14);
+
+            // normalise
+            float sum = sqrt(pow(x_vect, 2) + pow(y_vect, 2) + pow(z_vect, 2));
+            x_vect /= sum;
+            y_vect /= sum;
+            z_vect /= sum;
+
+            // convert from bee co-ordinates to world co-ordinates
+            // roll
+            float x_temp = x_vect;
+            float z_temp = z_vect;
+            x_vect = cos(roll) * x_temp - sin(roll) * z_temp;
+            z_vect = sin(roll) * x_temp + cos(roll) * z_temp;
+            // pitch
+            float y_temp = y_vect;
+            z_temp = z_vect;
+            y_vect = cos(pitch) * y_temp - sin(pitch) * z_temp;
+            z_vect = sin(pitch) * y_temp + cos(pitch) * z_temp;
+            // direction
+            x_temp = x_vect;
+            y_temp = y_vect;
+            x_vect = cos(dir) * x_temp - sin(dir) * y_temp;
+            y_vect = sin(dir) * x_temp + cos(dir) * y_temp;
+
+            // test all objects in the world for interaction
+
+            float min_t = 10000000.0;
+            int min_ind = -1;
+            for (int k = 0; k < objects.size(); ++k) {
+                float t;
+                bool isHit = objects[k]->isHit(QVector3D(x,y,z), QVector3D(x_vect,y_vect,z_vect), t);
+                if (isHit && t < min_t) {
+                    min_t = t;
+                    min_ind = k;
+                }
+            }
+
+
+            if (min_ind != -1) {
+                image->setPixel(h+shift, v,objects[min_ind]->getTexture(curr_t, this->lighting).rgb());
+            } else if (z_vect < 0) {
+                // generate the procedural floor for use in optic flow
+                int valx = abs(int((-z/z_vect * (x_vect) + x) * ONE_OVER_FLOOR_SIZE));
+                int valy = abs(int((-z/z_vect * (y_vect) + y) * ONE_OVER_FLOOR_SIZE));
+                int val = valx*valx + valy*valy;
+                val = abs(val * a_RNGg + c_RNGg);
+                //val = 100;
+                val = val % 255;
+                image->setPixel(h+shift, v,QColor(val, val, val).rgb());
+            }
+            //omp_unset_lock(&writelock);
+        }
+    }
+};
+
 
 int getValueG (int seed) {
 
@@ -169,88 +259,36 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
 
     int i = 0;
     // for each ommatidium in List for each eye
+    #pragma omp parallel for
+    QVector < beethread * > threads;
     for (int eye=-1; eye < 2; eye +=2) {
-        #pragma omp parallel for
-        for (int currIndex=0; currIndex < gdataLength; ++currIndex) {
-
-            // we have higher rez vertically than horizontally, higher rez at the front than the sides and top
-
-            //if (i > jitterY.size()-1)
-             //   qDebug() << jitterY.size() << " " << i << " " << N_ROWS << " " << blur;
-
-            //float v_ang = sign*pow(fabs(v_stride * v), 1.3)/pow(V_EXTENT*0.5, 1.3)*V_EXTENT*0.5 + jitterY[i]; /* pow gives higher rez at centre */
-            //sign = -((h < 0) - 0.5)*2;
-            //float h_ang = sign*pow(fabs(h_stride * h), 1.3)/pow(H_EXTENT*0.5, 1.3)*H_EXTENT*0.5 + jitterX[i];
-            // low rez at top
-            //h_ang /*+= ((h_ang > 0) - (h_ang < 0))*/ /= cos(v_ang/180.0*M_PI); //0.000385
-
-            float v_ang = gdata[currIndex][0]-60;
-            float h_ang = gdata[currIndex][1]*-eye; // flip angle for different eyes
-
-            int h = (100-gdata[currIndex][2])*-eye;
-            int v = gdata[currIndex][3];
-
-            int shift = eye<0 ? 0 : 199; // shift pixels for right eye
-
-
-            // work out vector
-            float x_vect = sin(h_ang/180.0*3.14);
-            float y_vect = cos(h_ang/180.0*3.14);
-            float z_vect = -sin(v_ang/180.0*3.14);
-
-            // normalise
-            float sum = sqrt(pow(x_vect, 2) + pow(y_vect, 2) + pow(z_vect, 2));
-            x_vect /= sum;
-            y_vect /= sum;
-            z_vect /= sum;
-
-            // convert from bee co-ordinates to world co-ordinates
-            // roll
-            float x_temp = x_vect;
-            float z_temp = z_vect;
-            x_vect = cos(roll) * x_temp - sin(roll) * z_temp;
-            z_vect = sin(roll) * x_temp + cos(roll) * z_temp;
-            // pitch
-            float y_temp = y_vect;
-            z_temp = z_vect;
-            y_vect = cos(pitch) * y_temp - sin(pitch) * z_temp;
-            z_vect = sin(pitch) * y_temp + cos(pitch) * z_temp;
-            // direction
-            x_temp = x_vect;
-            y_temp = y_vect;
-            x_vect = cos(dir) * x_temp - sin(dir) * y_temp;
-            y_vect = sin(dir) * x_temp + cos(dir) * y_temp;
-
-            // test all objects in the world for interaction
-
-            float min_t = 10000000.0;
-            int min_ind = -1;
-            //omp_set_lock(&writelock);
-            for (int k = 0; k < objects.size(); ++k) {
-                float t;
-                bool isHit = objects[k]->isHit(QVector3D(x,y,z), QVector3D(x_vect,y_vect,z_vect), t);
-                if (isHit && t < min_t) {
-                    min_t = t;
-                    min_ind = k;
-                }
+        // do in blocks of 2000
+        for (int start = 0; start < gdataLength; start=start+2000) {
+            int end = start+2000 > gdataLength ? gdataLength : start + 2000;
+            // launch thread
+            threads.push_back(new beethread());
+            threads.back()->starti = start;
+            threads.back()->end = end;
+            threads.back()->eye = eye;
+            threads.back()->image = image;
+            for (uint i = 0; i < this->objects.size(); ++i) {
+                threads.back()->objects.push_back(objects[i]->copy());
             }
-
-
-            if (min_ind != -1) {
-                image->setPixel(h+shift, v,objects[min_ind]->getTexture(curr_t, this->lighting).rgb());
-            } else if (z_vect < 0) {
-                // generate the procedural floor for use in optic flow
-                int valx = abs(int((-z/z_vect * (x_vect) + x) * ONE_OVER_FLOOR_SIZE));
-                int valy = abs(int((-z/z_vect * (y_vect) + y) * ONE_OVER_FLOOR_SIZE));
-                int val = valx*valx + valy*valy;
-                val = abs(val * a_RNGg + c_RNGg);
-                //val = 100;
-                val = val % 255;
-                image->setPixel(h+shift, v,QColor(val, val, val).rgb());
-            }
-            //omp_unset_lock(&writelock);
-            ++i;
+            threads.back()->dir = dir;
+            threads.back()->roll = roll;
+            threads.back()->pitch = pitch;
+            threads.back()->x = x;
+            threads.back()->y = y;
+            threads.back()->z = z;
+            threads.back()->curr_t = curr_t;
+            threads.back()->lighting = lighting;
+            threads.back()->start();
         }
+    }
+
+    // wait for threads
+    for (uint i = 0; i < threads.size(); ++i) {
+        threads[i]->wait();
     }
 
     if (this->drawBee) {
@@ -266,3 +304,5 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
     }
 
 }
+
+

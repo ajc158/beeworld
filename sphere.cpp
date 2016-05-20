@@ -78,3 +78,10 @@ void sphere::connectObject(spineMLNetworkServer * src, QString port) {
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(setScalingZ(QVector<float>)));
     }
 }
+
+sceneObject * sphere::copy() {
+    // create a new plane and return a pointer
+    sphere * newObj = new sphere(this->location, this->scaling, this->rotation);
+    newObj->setTextureGenerator(this->texture->copy());
+    return newObj;
+}
