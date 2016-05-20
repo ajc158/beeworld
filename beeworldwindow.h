@@ -44,11 +44,11 @@ struct controller {
     controller() {}
 };
 
-#ifndef IS_COMMANDLINE
 namespace Ui {
 class BeeWorldWindow;
 }
 
+#ifndef IS_COMMANDLINE
 class BeeWorldWindow : public QMainWindow
 #else
 class BeeWorldWindow : public QObject
