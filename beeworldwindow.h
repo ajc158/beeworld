@@ -69,9 +69,11 @@ public:
 public slots:
     void redrawImage();
     void newConnection();
+#ifndef IS_COMMANDLINE
     void redrawScreen();
-    bool loadFile(QString fileName);
     bool loadFile();
+#endif
+    bool loadFile(QString fileName);
     void paper1(QVector<float>);
     void paper2(QVector<float>);
     void paper3(QVector<float>);
