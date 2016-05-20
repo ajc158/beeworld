@@ -861,7 +861,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                         if (reader->name() == "Vertical") {
 
                             if (reader->attributes().hasAttribute("FOV"))
-                                initialPropertyValues[FOV_V] = reader->attributes().value("FOV").toFloat();
+                                initialPropertyValues[FOV_V] = reader->attributes().value("FOV").toString().toString().toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -872,7 +872,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                 settings.endArray();
                             }
                             if (reader->attributes().hasAttribute("Resolution"))
-                                initialPropertyValues[REZ_V] = reader->attributes().value("Resolution").toFloat();
+                                initialPropertyValues[REZ_V] = reader->attributes().value("Resolution").toString().toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -887,7 +887,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                         } else if (reader->name() == "Horizontal") {
 
                             if (reader->attributes().hasAttribute("FOV"))
-                                initialPropertyValues[FOV_H] = reader->attributes().value("FOV").toFloat();
+                                initialPropertyValues[FOV_H] = reader->attributes().value("FOV").toString().toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -898,7 +898,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                 settings.endArray();
                             }
                             if (reader->attributes().hasAttribute("Resolution"))
-                                initialPropertyValues[REZ_H] = reader->attributes().value("Resolution").toFloat();
+                                initialPropertyValues[REZ_H] = reader->attributes().value("Resolution").toString().toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
@@ -932,7 +932,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                             if (reader->name() == propertyStrings[i]) {
                                 notFound = false;
                                 if (reader->attributes().hasAttribute("value"))
-                                    initialPropertyValues[i/* It is vital this lines up with the enum */] = reader->attributes().value("value").toFloat();
+                                    initialPropertyValues[i/* It is vital this lines up with the enum */] = reader->attributes().value("value").toString().toFloat();
                                 else {
                                     QSettings settings;
                                     int num_errs = settings.beginReadArray("errors");
@@ -1691,7 +1691,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                         } else if (reader->name() == "DisplayScaling") {
 
                             if (reader->attributes().hasAttribute("value"))
-                                this->displayScale = reader->attributes().value("value").toFloat();
+                                this->displayScale = reader->attributes().value("value").toString().toFloat();
                             else {
                                 QSettings settings;
                                 int num_errs = settings.beginReadArray("errors");
