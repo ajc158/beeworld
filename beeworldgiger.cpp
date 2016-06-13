@@ -42,13 +42,13 @@ public:
 private:
     void run() {
         for (int currIndex=starti; currIndex < end; ++currIndex) {
-            float v_ang = gdata[currIndex][0]-60;
-            float h_ang = gdata[currIndex][1]*-eye; // flip angle for different eyes
+            float v_ang = gdata[currIndex][1]-70;
+            float h_ang = gdata[currIndex][0]*-eye; // flip angle for different eyes
 
-            int h = (100-gdata[currIndex][2])*-eye;
+            int h = (70-gdata[currIndex][2])*-eye;
             int v = gdata[currIndex][3];
 
-            int shift = eye<0 ? 0 : 199; // shift pixels for right eye
+            int shift = eye<0 ? 0 : 140; // shift pixels for right eye
 
             // work out vector
             float x_vect = sin(h_ang/180.0*3.14);
@@ -131,8 +131,8 @@ float randNumG(float M, float N) {
 beeworldgiger::beeworldgiger(QObject *parent) :
     beeworld(parent)
 {
-    N_ROWS = 120;//160;
-    N_COLS = 90;//160;
+    N_ROWS = 90;//160;
+    N_COLS = 120;//160;
     H_EXTENT = 260.0;//260
     V_EXTENT = 180.0;
 
@@ -232,7 +232,7 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
     //bool stripes = true;
 
     // we add 2 onto each dimension so that we can blur and end up without edge effects
-    QImage * image = new QImage(200,70,QImage::Format_RGB32);
+    QImage * image = new QImage(140,100,QImage::Format_RGB32);
     image->fill(Qt::white);
 
     // the raytracer:
