@@ -13,6 +13,12 @@
 class beeworld;
 class spineMLNetworkServer;
 
+struct posi {
+    float x;
+    float y;
+    float z;
+};
+
 enum propertyValue {
     TIME,
     X,
@@ -106,6 +112,8 @@ private:
     QPixmap pix;
     QTimer * timer;
     QTimer * redrawTimer;
+
+    QVector < posi > positions;
 
     void applyInitialValues();
 

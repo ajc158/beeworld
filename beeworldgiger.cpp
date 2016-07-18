@@ -15,6 +15,7 @@
 
 #include "gigerdata.h"
 
+
 int a_RNGg = 1103515245;
 int c_RNGg = 12345;
 
@@ -38,12 +39,14 @@ public:
     float z;
     float curr_t;
     bool lighting;
+    QVector <float> * jitterX;
+    QVector <float> * jitterY;
 
 private:
     void run() {
         for (int currIndex=starti; currIndex < end; ++currIndex) {
-            float v_ang = gdata[currIndex][1]-70;
-            float h_ang = gdata[currIndex][0]*-eye; // flip angle for different eyes
+            float v_ang = gdata[currIndex][1]-70-(*jitterX)[currIndex];
+            float h_ang = gdata[currIndex][0]*-eye-(*jitterY)[currIndex];; // flip angle for different eyes
 
             int h = (70-gdata[currIndex][2])*-eye;
             int v = gdata[currIndex][3];
@@ -166,7 +169,8 @@ beeworldgiger::beeworldgiger(QObject *parent) :
     lighting = false;
     blur = false;
     jitterSeed = 123;
-    setJitter();
+    this->jitterSize = 0.0;
+    setJitter(this->jitterSize);
 
 
 }
@@ -227,7 +231,7 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
         objects.back()->debugPrint();
     }*/
 
-    if (jitterX.isEmpty()) this->setJitter();
+    if (jitterX.isEmpty()) this->setJitter(this->jitterSize);
 
     //bool stripes = true;
 
@@ -281,6 +285,8 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
                 threads.back()->objects.push_back(objects[i]->copy());
             }
             threads.back()->dir = dir;
+            threads.back()->jitterX = &jitterX;
+            threads.back()->jitterY = &jitterY;
             threads.back()->roll = roll;
             threads.back()->pitch = pitch;
             threads.back()->x = x;
@@ -302,6 +308,10 @@ QImage * beeworldgiger::getImage(float x, float y, float z, float dir, float pit
         // remove bee object
         objects.pop_back();
     }
+
+    /*QTransform myTrans;
+    myTrans.rotate(180);
+    *image = image->transformed(myTrans);*/
 
     // blur
     if (blur) {

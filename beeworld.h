@@ -42,6 +42,7 @@ public:
     QVector3D drawnBeeLoc;
     QVector3D drawnBeeRot;
     bool drawBee;
+    float jitterSize;
 
 protected:
     int N_ROWS;
@@ -55,7 +56,7 @@ protected:
     QVector <float> jitterX;
     QVector <float> jitterY;
     int jitterSeed;
-    void setJitter();
+    void setJitter(float amount);
     
 signals:
     

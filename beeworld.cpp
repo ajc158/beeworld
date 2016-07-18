@@ -174,19 +174,20 @@ beeworld::beeworld(QObject *parent) :
     lighting = false;
     blur = false;
     jitterSeed = 123;
-    setJitter();
+    this->jitterSize = 2.0;
+    setJitter(this->jitterSize);
 
 }
 
-void beeworld::setJitter() {
+void beeworld::setJitter(float amount) {
     srand(this->jitterSeed);
     // set jitters
     jitterY.clear();
     jitterX.clear();
     for (int i = 0; i < this->N_ROWS*3; ++i) {
         for (int j = 0; j < this->N_COLS*3; ++j) {
-            jitterX.push_back(randNum(-2.0,2.0));
-            jitterY.push_back(randNum(-2.0,2.0));// all were 0.5
+            jitterX.push_back(randNum(-amount,amount));
+            jitterY.push_back(randNum(-amount,amount));// all were 0.5
         }
     }
     qDebug() << "Jitter Set";
@@ -268,7 +269,7 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
         objects.back()->debugPrint();
     }*/
 
-    if (jitterX.isEmpty()) this->setJitter();
+    if (jitterX.isEmpty()) this->setJitter(this->jitterSize);
 
     //bool stripes = true;
 
@@ -388,13 +389,13 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
 void beeworld::setWorldSize(int size) {
     N_ROWS = size;
     N_COLS = round(size*4./3.);
-    this->setJitter();
+    this->setJitter(this->jitterSize);
 }
 
 void beeworld::setWorldSize(int vert, int horiz) {
     N_ROWS = vert;
     N_COLS = horiz;
-    this->setJitter();
+    this->setJitter(this->jitterSize);
 }
 
 int beeworld::numElements() {

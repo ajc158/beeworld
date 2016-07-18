@@ -561,9 +561,42 @@ void BeeWorldWindow::wallFollow(QVector<float> data) {
 
 void BeeWorldWindow::test(QVector<float> data) {
 
-    if (val > 100) {
+    Q_UNUSED(data)
 
-        float velocity_setPoint = 1.3;
+    if (val < 2) {
+        // load x,y,z values from disk
+
+        QFile file("/Users/alex/run1/SaveData1.csv");
+        if (!file.open(QIODevice::ReadOnly)) {
+            qDebug() << file.errorString();
+            exit(-1);
+        }
+
+        this->positions.clear();
+        while (!file.atEnd()) {
+            QByteArray line = file.readLine();
+            posi position;
+            line.replace("\n","");
+            position.x = line.split(',').at(2).toFloat();
+            position.y = line.split(',').at(1).toFloat();
+            position.z = line.split(',').at(3).toFloat();
+            qDebug() << line.split(',');
+            this->positions.push_back(position);
+        }
+        file.close();
+        qDebug() << "Positions size = " << this->positions.size();
+    }
+
+    if (val > -1) {
+
+        if (val-5 < this->positions.size()) {
+            this->propertyValues[X] = this->positions[val].x;
+            this->propertyValues[Y] = this->positions[val].y;
+            this->propertyValues[Z] = this->positions[val].z;
+        }
+
+qDebug() << val;
+       /* float velocity_setPoint = 1.3;
 
         float avoid_right_scale = 1.0;
         float avoid_left_scale = 1.0;
@@ -615,13 +648,14 @@ void BeeWorldWindow::test(QVector<float> data) {
         //this->propertyValues[V] -= (data[7] - velocity_setPoint)*1.0; // a value of 20 ensures that we start moving before the height regulation takes us through the floor!
         // decay to 30...
         this->propertyValues[V] -= (this->propertyValues[V] - 60.0)/80.0;
-        //qDebug() << this->propertyValues[V] << " " << this->propertyValues[X] << " " << (data[0] + /*data[1] +*/ data[2]);
+        //qDebug() << this->propertyValues[V] << " " << this->propertyValues[X] << " " << (data[0] + data[1] + data[2]);
         //this->propertyValues[V] = 100;
+        */
 
     }
     //this->propertyValues[YAW] += 0.001;
-    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.001*this->propertyValues[V];
-    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.001*this->propertyValues[V];
+    //this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.001*this->propertyValues[V];
+    //this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.001*this->propertyValues[V];
 
 }
 
