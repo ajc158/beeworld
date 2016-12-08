@@ -403,7 +403,9 @@ void BeeWorldWindow::connectWorld(spineMLNetworkServer * src, QString port) {
 
 void BeeWorldWindow::paper1(QVector<float> data) {
 
+
     if (val > 200) {
+
 
         //dir_change = (dataIn[0] - dataIn[2]); // left - right (I think!)
         float mag = data[0] > data[2] ? data[0] : data[2];
@@ -414,7 +416,7 @@ void BeeWorldWindow::paper1(QVector<float> data) {
         //float setPoint = (dataIn[0] + dataIn[2])/2.0;
         float scale = 1.0;
         float side_setPoint = 1.0*scale;// 0.97 # 1.0 for 0 balance and 0.25 balance, 0.7 for 1.0 balance
-        float height_setPoint = 0.5*scale;//1.3
+        float height_setPoint = 1.3*scale;//0.5
         float velocity_setPoint = (2.0*side_setPoint /*+ height_setPoint*/);
 
         mag = mag - side_setPoint;
@@ -566,7 +568,7 @@ void BeeWorldWindow::test(QVector<float> data) {
     if (val < 2) {
         // load x,y,z values from disk
 
-        QFile file("/Users/alex/run1/SaveData1.csv");
+        QFile file("/Users/alex/Downloads/BeeBotTestA/SaveData121.csv");
         if (!file.open(QIODevice::ReadOnly)) {
             qDebug() << file.errorString();
             exit(-1);

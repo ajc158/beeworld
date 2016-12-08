@@ -27,6 +27,7 @@ private:
     float frequency;
     float radialOffset;
     float radialMotion;
+    //float motionOffset;
     QColor darkColour;
     QColor lightColour;
     bool isSine;
