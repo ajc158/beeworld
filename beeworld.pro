@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     scenetexture.cpp \
     checked.cpp \
     radial.cpp \
-    beeworldgiger.cpp
+    beeworldgiger.cpp \
+    rad_image.cpp
 
 HEADERS  += beeworldwindow.h \
     beeworld.h \
@@ -49,7 +50,8 @@ HEADERS  += beeworldwindow.h \
     checked.h \
     radial.h \
     beeworldgiger.h \
-    gigerdata.h
+    gigerdata.h \
+    rad_image.h
 
 FORMS    += beeworldwindow.ui
 

@@ -12,6 +12,8 @@
 
 using namespace std;
 
+class beethreadOld;
+
 class beeworld : public QObject
 {
     Q_OBJECT
@@ -57,6 +59,8 @@ protected:
     QVector <float> jitterY;
     int jitterSeed;
     void setJitter(float amount);
+    QVector < beethreadOld * > threads;
+    int n_threads = 8;
     
 signals:
     

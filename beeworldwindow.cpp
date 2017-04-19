@@ -19,6 +19,7 @@
 // include textures
 #include "checked.h"
 #include "radial.h"
+#include "rad_image.h"
 
 // for all the sockets stuff ('nix ONLY)
 #include <stdio.h>
@@ -81,7 +82,7 @@ BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
 #ifndef IS_COMMANDLINE
     redrawTimer = new QTimer(this);
     connect(redrawTimer, SIGNAL(timeout()), this, SLOT(redrawScreen()));
-    redrawTimer->start(30);
+    redrawTimer->start(100);
 #endif
 
     dataSize = 1024;
@@ -167,7 +168,8 @@ void BeeWorldWindow::redrawScreen() {
     world->drawnBeeRot.setX(propertyValues[ROLL]);
     world->drawnBeeRot.setY(propertyValues[PITCH]);
     world->drawnBeeRot.setZ(propertyValues[YAW]);
-    QImage * im = world->getImage(-1,-1,13,-0.78,-1.3,0, this->propertyValues[TIME], this->displayScale);
+    QImage * im = world->getImage(-4.0*sin(-propertyValues[YAW]+0.2),-4.0*cos(-propertyValues[YAW]+0.2),30,propertyValues[YAW]-0.2,-1.3,0, this->propertyValues[TIME], this->displayScale);
+    //qDebug() <<propertyValues[YAW];
     world->setLighting(false);
     world->drawBee = false;*/
 
@@ -268,7 +270,7 @@ void BeeWorldWindow::newConnection() {
         }
         //start the timers for the simulation
         this->timer->start(0);
-        this->redrawTimer->start(15);
+        this->redrawTimer->start(100);
         srand(time(NULL));
     }
 
@@ -366,6 +368,10 @@ void BeeWorldWindow::connectWorld(spineMLNetworkServer * src, QString port) {
     if (port == "Paper4") {
         PRINTDETAILS("Connected Paper4...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper4(QVector<float>)));
+    }
+    if (port == "Ofstad") {
+        PRINTDETAILS("Connected Ofstad...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(ofstad(QVector<float>)));
     }
     if (port == "Sweep") {
         PRINTDETAILS("Connected Sweep...");
@@ -494,6 +500,21 @@ void BeeWorldWindow::paper4(QVector<float> data) {
 
 }
 
+float yaw_extra = 0.0f;
+
+
+void BeeWorldWindow::ofstad(QVector<float> data) {
+
+    if (data.size() > 0) {
+        this->propertyValues[YAW] = data[0]/180*M_PI + yaw_extra;
+    }
+
+    this->propertyValues[Y] = data[2];
+    this->propertyValues[X] = data[1];
+
+}
+
+
 
 void BeeWorldWindow::wallFollow(QVector<float> data) {
 
@@ -556,8 +577,8 @@ void BeeWorldWindow::wallFollow(QVector<float> data) {
 
     }
     //this->propertyValues[YAW] += 0.001;
-    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
-    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    //this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    //this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
 
 }
 
@@ -1423,9 +1444,13 @@ bool BeeWorldWindow::loadFile(QString fileName) {
 
                                             }
 
-                                        } else if (reader->name() == "Radial") {
+                                        } else if (reader->name() == "Radial" || reader->name() == "Radial_im") {
 
-                                            tex = new radial();
+                                            if (reader->name() == "Radial") {
+                                                tex = new radial();
+                                            } else {
+                                                tex = new rad_image();
+                                            }
 
                                             // get the name
                                             // extract the object name
@@ -1439,6 +1464,28 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                     settings.setArrayIndex(num_errs + 1);
                                                     settings.setValue("errorText", "XML Error in World File - missing attribute 'name' in tag Radial");
                                                 settings.endArray();
+                                            }
+
+                                            if (reader->attributes().hasAttribute("filename")) {
+                                                qDebug() << "Here";
+                                                QString filename = reader->attributes().value("filename").toString();
+                                                QImage im = QImage(filename);
+                                                if (im.isNull()) {
+                                                    QSettings settings;
+                                                    int num_errs = settings.beginReadArray("errors");
+                                                    settings.endArray();
+                                                    settings.beginWriteArray("errors");
+                                                        settings.setArrayIndex(num_errs + 1);
+                                                        settings.setValue("errorText", "Could not load image file");
+                                                    settings.endArray();
+                                                    qDebug () << "moo";
+
+                                                }
+                                                rad_image * ri = qobject_cast <rad_image *> (tex);
+                                                if (ri) {
+
+                                                    ri->im = im.copy();
+                                                }
                                             }
 
                                             // properties:
@@ -1637,7 +1684,7 @@ bool BeeWorldWindow::loadFile(QString fileName) {
                                                             settings.setValue("errorText", "XML Error in World File - missing attribute 'b' in tag DarkCol");
                                                         settings.endArray();
                                                     }
-                                                    ((checked *) tex)->setDarkCol(col);
+                                                    ((radial *) tex)->setDarkCol(col);
                                                     reader->skipCurrentElement();
                                                 } else if (reader->name() == "isSine") {
                                                     QVector <float> val;

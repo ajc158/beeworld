@@ -32,7 +32,7 @@ float randNum(float M, float N) {
 class beethreadOld : public QThread
 {
 public:
-    int starti;
+    //int starti;
     QImage * image;
     QVector < sceneObject * > objects;
     float roll;
@@ -130,9 +130,10 @@ private:
         }
         }
         // clear up objects
-        for (int i = 0; i < this->objects.size(); ++i) {
+        /*for (int i = 0; i < this->objects.size(); ++i) {
             delete objects[i];
         }
+        this->objects.clear();*/
     }
 };
 
@@ -176,6 +177,12 @@ beeworld::beeworld(QObject *parent) :
     jitterSeed = 123;
     this->jitterSize = 0.0;
     setJitter(this->jitterSize);
+    this->drawBee = false;
+
+    for (int i = 0; i < n_threads; ++i) {
+        // create thread
+        threads.push_back(new beethreadOld());
+    }
 
 }
 
@@ -290,62 +297,76 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
     if (this->drawBee) {
         // add a bee object
         QVector3D scaling;
-        scaling.setX(0.3);
-        scaling.setY(1.3);
-        scaling.setZ(0.3);
+        scaling.setX(0.9);
+        scaling.setY(3.0);
+        scaling.setZ(0.9);
         this->drawnBeeRot.setZ(this->drawnBeeRot.z()*180/M_PI);
         sphere * bee = new sphere(this->drawnBeeLoc, scaling,this->drawnBeeRot);
         bee->setObjectName("bee");
         checked * tex = new checked();
-        tex->setOffsetX(QVector <float> (0.12));
-        tex->setFrequencyX(QVector <float> (0.00012));
-        tex->setFrequencyY(QVector <float> (0.00012));
+        tex->setOffsetX(QVector <float> (float(0.12)));
+        tex->setFrequencyX(QVector <float> (float(0.0012)));
+        tex->setFrequencyY(QVector <float> (float(0.0012)));
+        tex->setFrequencyY(QVector <float> (float(0.0000012)));
+        tex->setOffsetZ(QVector <float> (float(0.12)));
         tex->setMotionY(QVector <float> (0.0));
+        QVector <float> col1;
+        col1.push_back(1);
+        col1.push_back(1);
+        col1.push_back(0);
+        tex->setDarkCol(col1);
+        col1.clear();
+        col1.push_back(1);
+        col1.push_back(1);
+        col1.push_back(0);
+        tex->setLightCol(col1);
         bee->setTextureGenerator(tex);
         objects.push_back(bee);
     }
 
 
-    QVector < beethreadOld * > threads;
+
 
     //for (float h = -(N_COLS/2+blur); h < N_COLS/2+blur; ++h) {
-    int n_threads = 8;
+    //int n_threads = 8;
     int cols_per_thread = ceil(float(N_COLS)/float(n_threads));
     int remainder = -(cols_per_thread*7-N_COLS);
     for (int i = 0; i < n_threads; ++i) {
         // launch thread
-        threads.push_back(new beethreadOld());
-        //threads.back()->starti = h;
-        threads.back()->image = image;
+        //threads.push_back(new beethreadOld());
+        //threads[i]->starti = h;
+        threads[i]->image = image;
         if (i+1 < n_threads) {
-            threads.back()->minCol = -(N_COLS/2+blur)+i*cols_per_thread;
-            threads.back()->maxCol = -(N_COLS/2+blur)+(i+1)*cols_per_thread;
+            threads[i]->minCol = -(N_COLS/2+blur)+i*cols_per_thread;
+            threads[i]->maxCol = -(N_COLS/2+blur)+(i+1)*cols_per_thread;
         } else {
-            threads.back()->minCol = -(N_COLS/2+blur)+i*cols_per_thread;
-            threads.back()->maxCol = -(N_COLS/2+blur)+i*cols_per_thread+remainder;
+            threads[i]->minCol = -(N_COLS/2+blur)+i*cols_per_thread;
+            threads[i]->maxCol = -(N_COLS/2+blur)+i*cols_per_thread+remainder;
         }
-        for (uint i = 0; i < this->objects.size(); ++i) {
-            threads.back()->objects.push_back(objects[i]->copy());
+        if (threads[i]->objects.size() != this->objects.size()) {
+            for (uint j = 0; j < this->objects.size(); ++j) {
+                threads[i]->objects.push_back(objects[j]->copy());
+            }
         }
 
-        threads.back()->dir = dir;
-        threads.back()->roll = roll;
-        threads.back()->pitch = pitch;
-        threads.back()->x = x;
-        threads.back()->y = y;
-        threads.back()->z = z;
-        threads.back()->jitterX = jitterX;
-        threads.back()->jitterY = jitterY;
-        threads.back()->blur = blur;
-        threads.back()->N_ROWS = N_ROWS;
-        threads.back()->N_COLS = N_COLS;
-        threads.back()->curr_t = curr_t;
-        threads.back()->lighting = lighting;
-        threads.back()->v_stride = v_stride;
-        threads.back()->V_EXTENT = V_EXTENT;
-        threads.back()->H_EXTENT = H_EXTENT;
-        threads.back()->h_stride = h_stride;
-        threads.back()->start();
+        threads[i]->dir = dir;
+        threads[i]->roll = roll;
+        threads[i]->pitch = pitch;
+        threads[i]->x = x;
+        threads[i]->y = y;
+        threads[i]->z = z;
+        threads[i]->jitterX = jitterX;
+        threads[i]->jitterY = jitterY;
+        threads[i]->blur = blur;
+        threads[i]->N_ROWS = N_ROWS;
+        threads[i]->N_COLS = N_COLS;
+        threads[i]->curr_t = curr_t;
+        threads[i]->lighting = lighting;
+        threads[i]->v_stride = v_stride;
+        threads[i]->V_EXTENT = V_EXTENT;
+        threads[i]->H_EXTENT = H_EXTENT;
+        threads[i]->h_stride = h_stride;
+        threads[i]->start();
     }
 
     // wait for threads
@@ -353,9 +374,9 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
         threads[i]->wait();
     }
 
-    for (uint i = 0; i < threads.size(); ++i) {
+    /*for (uint i = 0; i < threads.size(); ++i) {
         delete threads[i];
-    }
+    }*/
 
     if (this->drawBee) {
         // remove bee object
