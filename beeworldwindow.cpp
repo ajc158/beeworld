@@ -1903,7 +1903,6 @@ bool BeeWorldWindow::loadFile(QString fileName) {
 
     }
 
-
     // evaluate errors...
     if (this->printErrors("Errors loading config file")) {
         return false;
@@ -1957,12 +1956,17 @@ bool BeeWorldWindow::printErrors(QString title) {
 
     // display errors:
     if (!errors.isEmpty()) {
+#ifndef IS_COMMANDLINE
         // display errors
         QMessageBox msgBox;
         msgBox.setText("<P><b>" + title + "</b></P>" + errors);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.setTextFormat(Qt::RichText);
         msgBox.exec();
+#else
+        qDebug() << title;
+        qDebug() << errors;
+#endif
     }
 
     return true;
