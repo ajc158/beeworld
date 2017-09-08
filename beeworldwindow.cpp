@@ -905,10 +905,16 @@ bool BeeWorldWindow::loadFile(QString fileName) {
 
     QFile file( fileName );
     if( !file.open( QIODevice::ReadOnly ) ) {
+#ifndef IS_COMMANDLINE
         QMessageBox msgBox;
         msgBox.setText("Could not open the world file");
         msgBox.exec();
-        return false;}
+        return false;
+#else
+        qDebug() << "Could not open the world file";
+        return false;
+#endif
+    }
 
     // reset everything
     controllers.clear();
