@@ -60,7 +60,7 @@ protected:
     int jitterSeed;
     void setJitter(float amount);
     QVector < beethreadOld * > threads;
-    int n_threads = 8;
+    int n_threads;
     
 signals:
     

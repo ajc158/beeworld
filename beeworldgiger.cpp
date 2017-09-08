@@ -139,6 +139,8 @@ beeworldgiger::beeworldgiger(QObject *parent) :
     H_EXTENT = 260.0;//260
     V_EXTENT = 180.0;
 
+    n_threads = 8;
+
     sphere * s = new sphere(QVector3D(0,4,4),QVector3D(2,1,1),QVector3D(45.0,0.0,0.0));
     s->setTextureGenerator(new checked());
     objects.push_back(s);
