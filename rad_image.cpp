@@ -21,7 +21,7 @@ QColor rad_image::getColour(QVector3D location, float t) {
     QVector3D adjLoc = location - this->offset;
 
     // calculate the angles
-    float angle_h = qAtan2(adjLoc.x(),adjLoc.y());
+    float angle_h = qAtan2(adjLoc.x(),adjLoc.y())+this->radialOffset;
     //float angle_v = qAtan2(qSqrt(qPow(adjLoc.x(),2)+qPow(adjLoc.y(),2)),adjLoc.z());
 
     if (im.isNull()) {
@@ -32,7 +32,7 @@ QColor rad_image::getColour(QVector3D location, float t) {
     int y = adjLoc.z()/30.0*im.height();
     if (y > im.height()-1) y = im.height()-1;
     if (y < 0) y = 0;
-    QRgb pix = im.pixel((angle_h/(2.0f*M_PI)+0.5)*im.width(),y);
+    QRgb pix = im.pixel(fmod((angle_h/(2.0f*M_PI)+0.5),1.0)*im.width(),y);
     return QColor::fromRgb(pix);
 
     // apply the scaling and offset to the angle

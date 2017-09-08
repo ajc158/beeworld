@@ -343,6 +343,10 @@ QImage * beeworld::getImage(float x, float y, float z, float dir, float pitch, f
             threads[i]->minCol = -(N_COLS/2+blur)+i*cols_per_thread;
             threads[i]->maxCol = -(N_COLS/2+blur)+i*cols_per_thread+remainder;
         }
+        for (uint j = 0; j < threads[i]->objects.size(); ++j) {
+            delete threads[i]->objects[j];
+        }
+        threads[i]->objects.clear();
         if (threads[i]->objects.size() != this->objects.size()) {
             for (uint j = 0; j < this->objects.size(); ++j) {
                 threads[i]->objects.push_back(objects[j]->copy());

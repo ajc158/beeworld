@@ -59,9 +59,19 @@ public slots:
      * Controller input for radialOffset
      */
     void setRadialOffset(QVector <float> radialOffset) {
+        //qDebug () << this->radialOffset << "moo" << this;
         if (radialOffset.size() == 1) {
             this->radialOffset = radialOffset[0];
         }
+    }
+
+    /*!
+     * \brief addRadialOffset
+     * \param radialOffset
+     * Controller input for radialOffset
+     */
+    void addRadialOffset(float radialOffset) {
+        this->radialOffset += radialOffset;
     }
 
     /*!

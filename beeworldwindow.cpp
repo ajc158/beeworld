@@ -77,7 +77,7 @@ BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(redrawImage()));
-    //timer->start(0);
+    timer->start(0);
 
 #ifndef IS_COMMANDLINE
     redrawTimer = new QTimer(this);
@@ -269,8 +269,8 @@ void BeeWorldWindow::newConnection() {
             }
         }
         //start the timers for the simulation
-        this->timer->start(0);
-        this->redrawTimer->start(100);
+        //this->timer->start(0);
+        //this->redrawTimer->start(100);
         srand(time(NULL));
     }
 
@@ -279,9 +279,9 @@ void BeeWorldWindow::newConnection() {
 void BeeWorldWindow::redrawImage() {
 
     // only run while we have a connection
-    if (connections.size() < 2) {
-        this->timer->stop();
-        this->redrawTimer->stop();
+    if (connections.size() != this->numConnections || this->numConnections == 0) {
+        //this->timer->stop();
+        //this->redrawTimer->stop();
         return;
     }
     imdata.resize(this->world->numElements(), 0);
@@ -501,16 +501,37 @@ void BeeWorldWindow::paper4(QVector<float> data) {
 }
 
 float yaw_extra = 0.0f;
+bool is_flipped = true;
 
 
 void BeeWorldWindow::ofstad(QVector<float> data) {
 
     if (data.size() > 0) {
-        this->propertyValues[YAW] = data[0]/180*M_PI + yaw_extra;
+        this->propertyValues[YAW] = data[0]/180*M_PI;
     }
 
     this->propertyValues[Y] = data[2];
     this->propertyValues[X] = data[1];
+
+    // find the cylinder
+    for (int i = 0; i < this->world->objectCount(); ++i) {
+        sceneObject * curr_obj = this->world->getObject(i);
+        if (curr_obj->name == "cy") {
+            rad_image * cy = (rad_image*) curr_obj->getSceneTexture();
+            // found!
+            QVector < float > yx;
+            yx.push_back(yaw_extra);
+            cy->setRadialOffset(yx);
+        }
+    }
+
+    if (!is_flipped && this->propertyValues[Y] == -10 && this->propertyValues[X] == -10) {
+        is_flipped = true;
+    } else if (is_flipped && !(this->propertyValues[Y] == -10 && this->propertyValues[X] == -10)) {
+        is_flipped = false;
+        yaw_extra += 3.14/2.0;
+        qDebug() << "Flipped arena!";
+    }
 
 }
 
