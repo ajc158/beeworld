@@ -177,7 +177,7 @@ beeworld::beeworld(QObject *parent) :
     lighting = false;
     blur = false;
     jitterSeed = 123;
-    this->jitterSize = 0.0;
+    this->jitterSize = 0.0;//0.2
     setJitter(this->jitterSize);
     this->drawBee = false;
 
