@@ -37,6 +37,9 @@
 #endif
 
 
+#include <regex>
+#include <string>
+
 #ifndef IS_COMMANDLINE
 BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
     QMainWindow(parent),
@@ -48,6 +51,16 @@ BeeWorldWindow::BeeWorldWindow(QString file, uint port, QWidget *parent) :
       QObject(parent)
 {
 #endif
+
+
+      // lalala
+      string variableName("a");
+      string code = "y=a*a+r";
+      std::regex regex("(^|[^a-zA-Z_])" + variableName + "(?=$|[^a-zA-Z_])");
+      string replaceText("la");
+      code = std::regex_replace(code, regex, "$1" + replaceText);
+
+      qDebug() << QString::fromStdString(code);
 
     world = new beeworldgiger;
 
