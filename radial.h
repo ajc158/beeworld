@@ -64,6 +64,7 @@ public slots:
      * Controller input for radialMotion
      */
     void setRadialMotion(QVector <float> radialMotion) {
+        qDebug() << "Radial motion = " << radialMotion[0];
         if (radialMotion.size() == 1) {
             this->radialMotion = radialMotion[0];
         }
