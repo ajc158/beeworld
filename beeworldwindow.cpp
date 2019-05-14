@@ -282,8 +282,10 @@ void BeeWorldWindow::newConnection() {
             }
         }
         //start the timers for the simulation
-        //this->timer->start(0);
-        //this->redrawTimer->start(100);
+        if (!standalone) {
+            this->timer->start(0);
+            this->redrawTimer->start(100);
+        }
         srand(time(NULL));
     }
 
@@ -293,8 +295,10 @@ void BeeWorldWindow::redrawImage() {
 
     // only run while we have a connection
     if (connections.size() != this->numConnections || this->numConnections == 0) {
-        //this->timer->stop();
-        //this->redrawTimer->stop();
+        if (!this->standalone) {
+            this->timer->stop();
+            this->redrawTimer->stop();
+        }
         return;
     }
     imdata.resize(this->world->numElements(), 0);
@@ -381,6 +385,14 @@ void BeeWorldWindow::connectWorld(spineMLNetworkServer * src, QString port) {
     if (port == "Paper4") {
         PRINTDETAILS("Connected Paper4...");
         QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(paper4(QVector<float>)));
+    }
+    if (port == "Tempy1") {
+        PRINTDETAILS("Connected Tempy1...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(tempy1(QVector<float>)));
+    }
+    if (port == "Control") {
+        PRINTDETAILS("Connected Control...");
+        QObject::connect(src,SIGNAL(dataReceived(QVector<float>)), this, SLOT(control(QVector<float>)));
     }
     if (port == "Ofstad") {
         PRINTDETAILS("Connected Ofstad...");
@@ -513,6 +525,59 @@ void BeeWorldWindow::paper4(QVector<float> data) {
 
 }
 
+void BeeWorldWindow::tempy1(QVector<float> data) {
+
+    float speed = 15.0f;
+    float vert_speed = 0.0f;
+
+    if (val < 500) {
+        speed = 30.0;
+        this->propertyValues[V] = speed;
+        this->propertyValues[V_TRANS] = speed;
+    }
+    else if (val < 1000) {
+        this->propertyValues[V] = -speed;
+        this->propertyValues[V_TRANS] = speed;
+    }
+    else if (val < 1500) {
+        speed = 30.0;
+        vert_speed = -0.0f;
+        this->propertyValues[V] = -speed;
+        this->propertyValues[V_TRANS] = -speed;
+    }
+    else if (val < 2000) {
+        vert_speed = -0.0f;
+        this->propertyValues[V] = speed;
+        this->propertyValues[V_TRANS] = -speed;
+    }
+    this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[X]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V];
+    this->propertyValues[Y]-=sin(this->propertyValues[YAW])*0.003*this->propertyValues[V_TRANS];
+    this->propertyValues[X]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V_TRANS];
+    this->propertyValues[Z]+=0.003*vert_speed;
+
+}
+
+void BeeWorldWindow::control(QVector<float> data) {
+
+    // We need full contol values (6dof)
+    if (data.size() == 6) {
+
+        float translation_speed_scaling = 0.003;
+
+        this->propertyValues[Y]+=cos(this->propertyValues[YAW])*translation_speed_scaling*data[0];
+        this->propertyValues[X]-=sin(this->propertyValues[YAW])*translation_speed_scaling*data[0];
+        this->propertyValues[Y]-=sin(this->propertyValues[YAW])*translation_speed_scaling*data[1];
+        this->propertyValues[X]+=cos(this->propertyValues[YAW])*translation_speed_scaling*data[1];
+        this->propertyValues[Z]+=translation_speed_scaling*data[2];
+
+        float rotation_speed_scaling = 0.03;
+        this->propertyValues[ROLL]+=rotation_speed_scaling*data[3];
+        this->propertyValues[PITCH]+=rotation_speed_scaling*data[4];
+        this->propertyValues[YAW]-=rotation_speed_scaling*data[5];
+    }
+}
+
 float yaw_extra = 0.0f;
 bool is_flipped = true;
 
@@ -542,8 +607,9 @@ void BeeWorldWindow::ofstad(QVector<float> data) {
         is_flipped = true;
     } else if (is_flipped && !(this->propertyValues[Y] == -10 && this->propertyValues[X] == -10)) {
         is_flipped = false;
-        yaw_extra += 3.14/2.0;
-        qDebug() << "Flipped arena!";
+        yaw_extra += 3.14/2.0*((float((rand()%100)>50)-0.5)*2.0);
+        if (yaw_extra < 0) yaw_extra = 6.28+yaw_extra;
+        qDebug() << "Flipped arena!" << yaw_extra << rand();
     }
 
 }
@@ -719,7 +785,8 @@ qDebug() << val;
 
 void BeeWorldWindow::sweep(QVector<float> data) {
 
-    this->propertyValues[V] = this->propertyValues[V] * 1.001;
+    this->propertyValues[V] = this->propertyValues[V] * 1.005 ;
+    this->propertyValues[V_TRANS] = this->propertyValues[V_TRANS] * 1.005 ;
 
     // move the bee according to the velocity
     this->propertyValues[Y]+=cos(this->propertyValues[YAW])*0.003*this->propertyValues[V];

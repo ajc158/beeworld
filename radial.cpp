@@ -28,9 +28,17 @@ QColor radial::getColour(QVector3D location, float t) {
                                 (lightColour.blueF() - darkColour.blueF())*sine + darkColour.blueF());
     } else {
         if (round(0.5*qSin((angle+(radialOffset+radialMotion*t/1000.0)/180.0*M_PI)*frequency)+0.5)) {
-            return darkColour;
+            if (1 || int(location.z()*2) % 2 == 0) {
+                return darkColour;
+            } else {
+                return lightColour;
+            }
         } else {
-            return lightColour;
+            if (1 || int(location.z()*2) % 2 == 0) {
+                return lightColour;
+            } else {
+                return darkColour;
+            }
         }
     }
 

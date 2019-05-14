@@ -84,7 +84,9 @@ public slots:
     void paper2(QVector<float>);
     void paper3(QVector<float>);
     void paper4(QVector<float>);
+    void tempy1(QVector<float>);
     void ofstad(QVector<float>);
+    void control(QVector<float>);
     void wallFollow(QVector<float>);
     void test(QVector<float>);
     void sweep(QVector<float>);
